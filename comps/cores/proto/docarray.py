@@ -13,6 +13,8 @@ from pydantic import Field, conint, conlist
 class TextDoc(BaseDoc):
     text: str
 
+class ImageDoc(BaseDoc):
+    image_path: str
 
 class Base64ByteStrDoc(BaseDoc):
     byte_str: str
