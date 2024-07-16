@@ -3,7 +3,9 @@
 
 import os
 import time
+from typing import Optional, Tuple, Union
 
+#from langchain_community.embeddings import HuggingFaceBgeEmbeddings, HuggingFaceHubEmbeddings
 from embeddings.BridgeTowerEmbeddings import BridgeTowerEmbeddings, MMEmbeddings
 from langchain_community.vectorstores import Redis
 from langsmith import traceable
@@ -14,6 +16,8 @@ from comps import (
     SearchedDoc,
     ServiceType,
     TextDoc,
+    ImageDoc, 
+    TextImageDoc,
     opea_microservices,
     register_microservice,
     register_statistics,
@@ -60,7 +64,13 @@ def retrieve(input: EmbedDoc1024) -> SearchedDoc:
         )
     searched_docs = []
     for r in search_res:
-        searched_docs.append(TextDoc(text=r.page_content))
+        if isinstance(r, TextDoc):
+            searched_docs.append(TextDoc(text=r.page_content))
+        elif isinstance(r, ImageDoc):  
+            searched_docs.append(ImageDoc(image=r.image_data))
+        elif isinstance(r, TextImageDoc):  
+            searched_docs.append(TextImageDoc(Tuple[Union[r.page_content, r.image_data]]))
+
     result = SearchedDoc(retrieved_docs=searched_docs, initial_query=input.text)
     statistics_dict["opea_service@mm_retriever_redis"].append_latency(time.time() - start, None)
     return result
