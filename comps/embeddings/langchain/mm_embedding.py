@@ -54,6 +54,8 @@ def embedding(input: MMDoc) -> EmbedDoc1024:
         # Handle text + image input
         embed_vector = BridgeTowerEmbeddings.embed_image_text_pairs(input.doc)  
         res = EmbedDoc1024(text=input.doc, embedding=embed_vector)
+    else:
+        raise ValueError("Invalid input type")
         
 
     statistics_dict["opea_service@embedding_multimodal"].append_latency(time.time() - start, None)
