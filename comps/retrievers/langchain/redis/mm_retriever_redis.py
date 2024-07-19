@@ -13,7 +13,7 @@ from redis_config import EMBED_MODEL, INDEX_NAME, REDIS_URL
 
 from comps import (
     EmbedDoc1024,
-    SearchedDoc,
+    SearchedMultimodalDoc,
     ServiceType,
     TextDoc,
     ImageDoc, 
@@ -36,11 +36,11 @@ mm_embedding_endpoint = os.getenv("MM_EMBEDDING_ENDPOINT")
 )
 @traceable(run_type="retriever")
 @register_statistics(names=["opea_service@mm_retriever_redis"])
-def retrieve(input: EmbedDoc1024) -> SearchedDoc:
+def retrieve(input: EmbedDoc1024) -> SearchedMultimodalDoc:
     start = time.time()
     # check if the Redis index has data
     if vector_db.client.keys() == []:
-        result = SearchedDoc(retrieved_docs=[], initial_query=input.text)
+        result = SearchedMultimodalDoc(retrieved_docs=[], initial_query=input.text)
         statistics_dict["opea_service@mm_retriever_redis"].append_latency(time.time() - start, None)
         return result
 
@@ -71,7 +71,7 @@ def retrieve(input: EmbedDoc1024) -> SearchedDoc:
         elif isinstance(r, TextImageDoc):  
             searched_docs.append(TextImageDoc(Tuple[Union[r.page_content, r.image_data]]))
 
-    result = SearchedDoc(retrieved_docs=searched_docs, initial_query=input.text)
+    result = SearchedMultimodalDoc(retrieved_docs=searched_docs, initial_query=input.text)
     statistics_dict["opea_service@mm_retriever_redis"].append_latency(time.time() - start, None)
     return result
 
