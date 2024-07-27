@@ -772,31 +772,6 @@ def delete_audio_file(audio_path: str):
     os.remove(audio_path)
 
 
-def maintain_aspect_ratio_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
-    """Maintain aspect ratio of image while resizing"""
-    # Grab the image size and initialize dimensions
-    dim = None
-    (h, w) = image.shape[:2]
-
-    # Return original image if no need to resize
-    if width is None and height is None:
-        return image
-
-    # We are resizing height if width is none
-    if width is None:
-        # Calculate the ratio of the height and construct the dimensions
-        r = height / float(h)
-        dim = (int(w * r), height)
-    # We are resizing width if height is none
-    else:
-        # Calculate the ratio of the width and construct the dimensions
-        r = width / float(w)
-        dim = (width, int(h * r))
-
-    # Return the resized image
-    return cv2.resize(image, dim, interpolation=inter)
-
-
 def time_to_frame(time: float, fps: float):
     """Convert time in seconds into frame number"""
     return int(time * fps - 1)
@@ -817,16 +792,14 @@ def extract_frames_and_annotations(video_path: str, captions_path: str, output_d
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(os.path.join(output_dir, 'frames'), exist_ok=True)
 
-    # Load video and get fps and total number of frames
+    # Load video and get fps
     vidcap = cv2.VideoCapture(video_path)
-    fps, frame_count = vidcap.get(cv2.CAP_PROP_FPS), vidcap.get(cv2.CAP_PROP_FRAME_COUNT)
-
-    annotations = []
-    frame_list= []
+    fps = vidcap.get(cv2.CAP_PROP_FPS)
 
     # read captions file
     captions = webvtt.read(captions_path)
 
+    annotations = []
     for idx, caption in enumerate(captions):
         start_time = str2time(caption.start)
         end_time = str2time(caption.end)
@@ -842,9 +815,7 @@ def extract_frames_and_annotations(video_path: str, captions_path: str, output_d
             # Save frame as jpg file
             img_fname = f"frame_{idx}"
             img_fpath = os.path.join(output_dir, 'frames', img_fname + '.jpg')
-            image = maintain_aspect_ratio_resize(frame, height=350)
-            cv2.imwrite(img_fpath, image)
-            frame = Image.fromarray(frame)
+            cv2.imwrite(img_fpath, frame)
 
             # Create annotations for frame
             annotations.append({
@@ -857,11 +828,11 @@ def extract_frames_and_annotations(video_path: str, captions_path: str, output_d
                 'sub_video_id' : idx,
             })
         
-        # Save annotations as json file
-        with open(os.path.join(output_dir, 'annotations.json'), 'w') as f:
-            json.dump(annotations, f)
+    # Save annotations as json file
+    with open(os.path.join(output_dir, 'annotations.json'), 'w') as f:
+        json.dump(annotations, f)
         
-        vidcap.release()
+    vidcap.release()
 
         
 
