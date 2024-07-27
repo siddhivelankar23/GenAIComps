@@ -15,7 +15,7 @@ import timeit
 import unicodedata
 import urllib.parse
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Iterator
 from urllib.parse import urlparse, urlunparse
 
 import cairosvg
@@ -39,6 +39,7 @@ from langchain_community.document_loaders import (
 )
 from langchain_community.llms import HuggingFaceEndpoint
 from PIL import Image
+from moviepy.editor import VideoFileClip
 
 
 class TimeoutError(Exception):
@@ -715,3 +716,55 @@ def remove_folder_with_ignore(folder_path: str, except_patterns: List = []):
                 continue
             if not os.listdir(dir_path):
                 os.rmdir(dir_path)
+
+
+def convert_video_to_audio(video_path: str, output_audio_path: str):
+    """Converts video to audio using MoviePy library that uses `ffmpeg` under the hood.
+    
+    :param video_path: file path of video file (.mp4)
+    :param output_audio_path: file path of audio file (.wav) to be created
+    """
+    clip = VideoFileClip(video_path)
+    clip.audio.write_audiofile(output_audio_path)
+
+
+def extract_transcript_from_audio(whisper_model, audio_path: str):
+    """Generate trabscript from audio file
+    
+    :param whisper_model: a pre-loaded whisper model object
+    :param audio_path: file path of audio file (.wav)
+    """
+    options = dict(task="translate", best_of=5, language='en')
+    return whisper_model.transcribe(audio_path, **options)
+
+
+def format_timestamp_for_transcript(seconds: float, always_include_hours: bool = False, fractionalSeperator: str = '.'):
+    """Format timestamp for video transcripts"""
+    milliseconds = round(seconds * 1000.0)
+
+    hours = milliseconds // 3_600_000
+    milliseconds -= hours * 3_600_000
+
+    minutes = milliseconds // 60_000
+    milliseconds -= minutes * 60_000
+
+    seconds = milliseconds // 1_000
+    milliseconds -= seconds * 1_000
+
+    hours_marker = f"{hours:02d}:" if always_include_hours or hours > 0 else ""
+    return f"{hours_marker}{minutes:02d}:{seconds:02d}{fractionalSeperator}{milliseconds:03d}"
+
+
+def write_vtt(transcript: Iterator[dict], vtt_path: str):
+    """Write transcripts to a .vtt file"""
+    with open(vtt_path, 'a') as file:
+        file.writer("WEBVTT\n")
+        for segment in transcript:
+            text = (segment['text']).replace('-->', '->')
+            file.write(f"{format_timestamp_for_transcript(segment['start'])} --> {format_timestamp_for_transcript(segment['end'])}\n")
+            file.write(f"{text}\n")
+
+
+def delete_audio_file(audio_path: str):
+    """Delete audio file after extracting transcript"""
+    os.remove(audio_path)
