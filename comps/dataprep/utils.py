@@ -690,5 +690,28 @@ def get_file_structure(root_path: str, parent_path: str = "") -> List[Dict[str, 
             result.append(folder_dict)
 
     return result
-        
 
+
+def remove_folder_with_ignore(folder_path: str, except_patterns: List = []):
+    """Remove the specific folder, and ignore some files/folders.
+
+    :param folder_path: file path to delete
+    :param except_patterns: files/folder name to ignore
+    """
+    print(f"except patterns: {except_patterns}")
+    for root, dirs, files in os.walk(folder_path, topdown=False):
+        for name in files:
+            # delete files except ones that match patterns
+            file_path = os.path.join(root, name)
+            if except_patterns != [] and any(pattern in file_path for pattern in except_patterns):
+                continue
+            os.remove(file_path)
+
+        # delete empty folder
+        for name in dirs:
+            dir_path = os.path.join(root, name)
+            # delete folders except ones that match patterns
+            if except_patterns != [] and any(pattern in dir_path for pattern in except_patterns):
+                continue
+            if not os.listdir(dir_path):
+                os.rmdir(dir_path)
