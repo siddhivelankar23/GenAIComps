@@ -1,0 +1,11 @@
+diffusers
+fastapi
+langchain==0.1.12
+langchain_benchmarks
+moviepy
+opencv-python
+openai-whisper 
+pydantic==1.10.13
+redis
+transformers
+webvtt-py
