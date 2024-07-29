@@ -1,7 +1,7 @@
 import json
 import os
 from pathlib import Path
-from typing import List, Optional, Tuple, Union, Iterator
+from typing import List, Optional, Tuple, Union, Iterator, Any
 
 import cv2
 import torch
@@ -147,6 +147,11 @@ class BridgeTowerForITC(BridgeTowerPreTrainedModel):
 
 class BridgeTowerEmbeddings(BaseModel, Embeddings):
     """ BridgeTower embedding model """
+    device: Any
+    text_model: Any
+    processor: Any
+    model: Any
+
     def __init__(self, model_name: str, device: str = "hpu"):
         """Initialize the BridgeTowerEmbeddings class"""
         super().__init__()
@@ -244,8 +249,11 @@ def convert_video_to_audio(video_path: str, output_audio_path: str):
     :param video_path: file path of video file (.mp4)
     :param output_audio_path: file path of audio file (.wav) to be created
     """
-    clip = VideoFileClip(video_path)
-    clip.audio.write_audiofile(output_audio_path)
+    video_clip = VideoFileClip(video_path)
+    audio_clip = video_clip.audio
+    audio_clip.write_audiofile(output_audio_path)
+    video_clip.close()
+    audio_clip.close()
 
 
 def load_whisper_model(model_name: str = "base"):

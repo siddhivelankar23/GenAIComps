@@ -41,7 +41,7 @@ except Exception as e:
 
 
 upload_folder = "./uploaded_files/"
-whisper_model = load_whisper_model()
+whisper_model = load_whisper_model(model_name="base")
 
 
 class MultimodalRedis(Redis):
@@ -270,7 +270,7 @@ def drop_index(index_name, redis_url=REDIS_URL):
 @register_microservice(name="opea_service@prepare_doc_redis", endpoint="/v1/dataprep", host="0.0.0.0", port=6007)
 @traceable(run_type="tool")
 async def ingest_videos(
-    files: Optional[Union[UploadFile, List[UploadFile]]] = File(None)
+    files:  List[UploadFile] = File(None)
 ):
     print(f"files:{files}")
 
@@ -292,23 +292,24 @@ async def ingest_videos(
             video_file_name = os.path.splitext(video_file.filename)[0]
             
             # Save video file in upload_directory
-            with open(os.path.join(upload_folder, video_file.filename), 'w') as f:
-                f.write(video_file)
+            with open(os.path.join(upload_folder, video_file.filename), 'wb') as f:
+                shutil.copyfileobj(video_file.file, f)
 
             # Check if corresponding vtt file has been uploaded
             vtt_file = video_file_name + ".vtt"
-            try:
-                vtt_idx = captions_files.index(vtt_file)
-            except ValueError:
-                vtt_idx = None
+            vtt_idx = None
+            for idx, caption_file in enumerate(captions_files):
+                if caption_file.filename == vtt_file:
+                    vtt_idx = idx
+                    break
 
-            if vtt_idx:
+            if vtt_idx is not None:
                 # Save captions file in upload_directory
-                with open(os.path.join(upload_folder, vtt_file), 'w') as f:
-                    f.write(captions_files[vtt_idx])
+                with open(os.path.join(upload_folder, vtt_file), 'wb') as f:
+                    shutil.copyfileobj(captions_files[vtt_idx].file, f)
             else:
-                # Convert mp4 to temporary mp3 file
-                audio_file = video_file_name + ".mp3"
+                # Convert mp4 to temporary wav file
+                audio_file = video_file_name + ".wav"
                 convert_video_to_audio(os.path.join(upload_folder, video_file.filename), os.path.join(upload_folder, audio_file))
                 
                 # Extract transcript from audio
@@ -327,7 +328,7 @@ async def ingest_videos(
             os.remove(os.path.join(upload_folder, video_file.filename))
             os.remove(os.path.join(upload_folder, vtt_file))
         
-            # TODO: Ingest multimodal data into redis
+            # Ingest multimodal data into redis
             ingest_multimodal(video_file_name, video_file_name, video_file_name, os.path.join(upload_folder, video_file_name))
         
         return {"status": 200, "message": "Data preparation succeeded"}
