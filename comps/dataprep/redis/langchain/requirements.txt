@@ -26,10 +26,3 @@ redis
 sentence_transformers
 shortuuid
 unstructured[all-docs]==0.11.5
-
-
-curl -X POST \
-    -H "Content-Type: multipart/form-data" \
-    -F "files=@/home/ubuntu/sjagtap/data/ChipmakingDeal.mp4" \
-    -F "files=@/home/ubuntu/sjagtap/data/ChipmakingDeal.vtt" \
-    http://localhost:6007/v1/dataprep
