@@ -267,7 +267,7 @@ def drop_index(index_name, redis_url=REDIS_URL):
     return True
 
 
-@register_microservice(name="opea_service@prepare_doc_redis", endpoint="/v1/mm_dataprep", host="0.0.0.0", port=6007)
+@register_microservice(name="opea_service@prepare_doc_redis", endpoint="/v1/dataprep", host="0.0.0.0", port=6007)
 @traceable(run_type="tool")
 async def ingest_videos(
     files: Optional[Union[UploadFile, List[UploadFile]]] = File(None)
@@ -336,7 +336,7 @@ async def ingest_videos(
 
 
 @register_microservice(
-    name="opea_service@prepare_doc_redis_file", endpoint="/v1/mm_dataprep/get_file", host="0.0.0.0", port=6008
+    name="opea_service@prepare_doc_redis_file", endpoint="/v1/dataprep/get_file", host="0.0.0.0", port=6008
 )
 @traceable(run_type="tool")
 async def rag_get_file_structure():

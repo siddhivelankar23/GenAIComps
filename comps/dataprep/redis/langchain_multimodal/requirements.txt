@@ -13,7 +13,8 @@ opentelemetry-sdk
 optimum[habana]
 Pillow
 prometheus-fastapi-instrumentator
-pydantic==1.10.13
+pydantic==2.8.2
 redis
 transformers
+shortuuid
 webvtt-py
