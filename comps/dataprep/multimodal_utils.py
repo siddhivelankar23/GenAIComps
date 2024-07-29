@@ -1,11 +1,13 @@
 import json
 import os
+from pathlib import Path
 from typing import List, Optional, Tuple, Union, Iterator
 
 import cv2
 import torch
 import torch.nn.functional as F
 import webvtt
+import whisper
 from langchain_core.embeddings import Embeddings
 from langchain_core.pydantic_v1 import BaseModel
 from moviepy.editor import VideoFileClip
@@ -222,6 +224,18 @@ class BridgeTowerEmbeddings(BaseModel, Embeddings):
             image_list = []
             text_list = []
         return embeddings
+    
+
+def create_upload_folder(upload_path):
+    if not os.path.exists(upload_path):
+        Path(upload_path).mkdir(parents=True, exist_ok=True)
+
+
+def load_json_file(file_path):
+    """Read contents of json file"""
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+    return data
 
 
 def convert_video_to_audio(video_path: str, output_audio_path: str):
@@ -234,8 +248,13 @@ def convert_video_to_audio(video_path: str, output_audio_path: str):
     clip.audio.write_audiofile(output_audio_path)
 
 
+def load_whisper_model(model_name: str = "base"):
+    """Load a whisper model for generating video transcripts"""
+    return whisper.load_model(model_name)
+
+
 def extract_transcript_from_audio(whisper_model, audio_path: str):
-    """Generate trabscript from audio file
+    """Generate transcript from audio file
     
     :param whisper_model: a pre-loaded whisper model object
     :param audio_path: file path of audio file (.wav)

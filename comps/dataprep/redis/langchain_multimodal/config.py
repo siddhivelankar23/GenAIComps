@@ -4,7 +4,6 @@
 import os
 
 # Embedding model
-
 EMBED_MODEL = os.getenv("EMBED_MODEL", "BridgeTower/bridgetower-large-itm-mlm-itc")
 
 # Redis Connection Information

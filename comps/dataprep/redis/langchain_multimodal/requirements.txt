@@ -2,6 +2,7 @@ diffusers
 fastapi
 langchain==0.1.12
 langchain_benchmarks
+langsmith
 moviepy
 opencv-python
 openai-whisper 
