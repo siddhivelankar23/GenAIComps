@@ -34,5 +34,5 @@ USER user
 
 WORKDIR /home/user/comps/dataprep/redis/langchain_multimodal
 
-ENTRYPOINT ["python", "prepare_mm_doc_redis.py"]
+ENTRYPOINT ["python", "prepare_doc_redis.py"]
 
