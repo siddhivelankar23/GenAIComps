@@ -75,6 +75,7 @@ class SearchedMultimodalDoc(BaseDoc):
     retrieved_docs: DocList[TextImageDoc]
     initial_query: str
     top_n: int = 1
+    metadata: DocList[dict]
 
     class Config:
         json_encoders = {np.ndarray: lambda x: x.tolist()}
