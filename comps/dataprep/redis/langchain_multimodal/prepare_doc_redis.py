@@ -39,9 +39,10 @@ except Exception as e:
     else:
         device = 'cpu'
 
+
 upload_folder = "./uploaded_files/"
 whisper_model = load_whisper_model(model_name="base")
-embeddings = BridgeTowerEmbeddings(model_name=EMBED_MODEL, device=device)
+mm_embeddings = BridgeTowerEmbeddings(model_name=EMBED_MODEL, device=device)
 
 
 class MultimodalRedis(Redis):
@@ -165,7 +166,7 @@ class MultimodalRedis(Redis):
                 raise ValueError("Number of metadatas must match number of texts")
             if not (isinstance(metadatas, list) and isinstance(metadatas[0], dict)):
                 raise ValueError("Metadatas must be a list of dicts")
-        embeddings = embeddings or self._embeddings.embed_image_text_pairs(list(texts), list(images), batch_size=batch_size)
+        embeddings = self._embeddings.embed_image_text_pairs(list(texts), list(images), batch_size=batch_size)
         self._create_index_if_not_exist(dim=len(embeddings[0]))
         
         # Write data to redis
@@ -326,7 +327,7 @@ async def ingest_videos(
             os.remove(os.path.join(upload_folder, vtt_file))
         
             # Ingest multimodal data into redis
-            ingest_multimodal(video_file_name, video_file_name, video_file_name, os.path.join(upload_folder, video_file_name), embeddings)
+            ingest_multimodal(video_file_name, video_file_name, video_file_name, os.path.join(upload_folder, video_file_name), mm_embeddings)
         
         return {"status": 200, "message": "Data preparation succeeded"}
 
