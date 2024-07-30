@@ -44,15 +44,15 @@ def embedding(input: MMDoc) -> EmbedDoc1024:
     
     if isinstance(input, TextDoc):
         # Handle text input
-        embed_vector = BridgeTowerEmbeddings.embed_query(input.text)
+        embed_vector = MMEmbeddings.embed_query(input.text)
         res = EmbedDoc1024(text=input.text, embedding=embed_vector)
     elif isinstance(input, ImageDoc):
         # Handle image input
-        embed_vector = BridgeTowerEmbeddings.embed_image(input.image_path)  
+        embed_vector = MMEmbeddings.embed_image(input.image_path)  
         res = EmbedDoc1024(text=input.image_path, embedding=embed_vector)
     elif isinstance(input, TextImageDoc):
         # Handle text + image input
-        embed_vector = BridgeTowerEmbeddings.embed_image_text_pairs(input.doc)  
+        embed_vector = MMEmbeddings.embed_image_text_pairs(input.doc)  
         res = EmbedDoc1024(text=input.doc, embedding=embed_vector)
     else:
         raise ValueError("Invalid input type")
