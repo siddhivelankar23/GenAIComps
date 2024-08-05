@@ -166,7 +166,9 @@ class MultimodalRedis(Redis):
                 raise ValueError("Number of metadatas must match number of texts")
             if not (isinstance(metadatas, list) and isinstance(metadatas[0], dict)):
                 raise ValueError("Metadatas must be a list of dicts")
-        embeddings = self._embeddings.embed_image_text_pairs(list(texts), list(images), batch_size=batch_size)
+
+        if not embeddings:    
+            embeddings = self._embeddings.embed_image_text_pairs(list(texts), list(images), batch_size=batch_size)
         self._create_index_if_not_exist(dim=len(embeddings[0]))
         
         # Write data to redis
@@ -265,7 +267,7 @@ def drop_index(index_name, redis_url=REDIS_URL):
     return True
 
 
-@register_microservice(name="opea_service@prepare_doc_redis", endpoint="/v1/dataprep", host="0.0.0.0", port=6007)
+@register_microservice(name="opea_service@prepare_doc_redis_videos", endpoint="/v1/dataprep/upload_videos", host="0.0.0.0", port=6006)
 @traceable(run_type="tool")
 async def ingest_videos(
     files:  List[UploadFile] = File(None)
@@ -274,14 +276,11 @@ async def ingest_videos(
 
     if files:
         video_files = []
-        captions_files = []
         for file in files:
             if os.path.splitext(file.filename)[1] == ".mp4":
                 video_files.append(file)
-            elif os.path.splitext(file.filename)[1] == ".vtt":
-                captions_files.append(file)
             else:
-                print(f"Skipping file {file.filename} because of unsupported format.")
+                print(f"Skipping file {file.filename} as it's not an mp4 file.")
         
         if len(video_files) == 0:
             return HTTPException(status_code=400, detail="The uploaded files have unsupported formats. Please upload atleast one video file (.mp4) with or without captions (.vtt)")
@@ -293,29 +292,17 @@ async def ingest_videos(
             with open(os.path.join(upload_folder, video_file.filename), 'wb') as f:
                 shutil.copyfileobj(video_file.file, f)
 
-            # Check if corresponding vtt file has been uploaded
-            vtt_file = video_file_name + ".vtt"
-            vtt_idx = None
-            for idx, caption_file in enumerate(captions_files):
-                if caption_file.filename == vtt_file:
-                    vtt_idx = idx
-                    break
-
-            if vtt_idx is not None:
-                # Save captions file in upload_directory
-                with open(os.path.join(upload_folder, vtt_file), 'wb') as f:
-                    shutil.copyfileobj(captions_files[vtt_idx].file, f)
-            else:
-                # Convert mp4 to temporary wav file
-                audio_file = video_file_name + ".wav"
-                convert_video_to_audio(os.path.join(upload_folder, video_file.filename), os.path.join(upload_folder, audio_file))
+            # Convert mp4 to temporary wav file
+            audio_file = video_file_name + ".wav"
+            convert_video_to_audio(os.path.join(upload_folder, video_file.filename), os.path.join(upload_folder, audio_file))
                 
-                # Extract transcript from audio
-                transcripts = extract_transcript_from_audio(whisper_model, os.path.join(upload_folder, audio_file))
+            # Extract transcript from audio
+            transcripts = extract_transcript_from_audio(whisper_model, os.path.join(upload_folder, audio_file))
 
-                # Save transcript as vtt file and delete audio file
-                write_vtt(transcripts, os.path.join(upload_folder, vtt_file))
-                delete_audio_file
+            # Save transcript as vtt file and delete audio file
+            vtt_file = video_file_name + ".vtt"
+            write_vtt(transcripts, os.path.join(upload_folder, vtt_file))
+            delete_audio_file
 
             # Store frames and caption annotations in a new directory
             extract_frames_and_annotations(os.path.join(upload_folder, video_file.filename), os.path.join(upload_folder, vtt_file), os.path.join(upload_folder, video_file_name))
@@ -331,7 +318,70 @@ async def ingest_videos(
         
         return {"status": 200, "message": "Data preparation succeeded"}
 
-    raise HTTPException(status_code=400, detail="Must provide atleast one video (.mp4) file with or without captions.")
+    raise HTTPException(status_code=400, detail="Must provide atleast one video (.mp4) file.")
+
+
+@register_microservice(name="opea_service@prepare_doc_redis_videos_captions", endpoint="/v1/dataprep/upload_videos_captions", host="0.0.0.0", port=6007)
+@traceable(run_type="tool")
+async def ingest_videos(
+    files:  List[UploadFile] = File(None)
+):
+    print(f"files:{files}")
+
+    if files:
+        video_files, video_file_names = [], []
+        captions_files, captions_file_names = [], []
+        for file in files:
+            if os.path.splitext(file.filename)[1] == ".mp4":
+                video_files.append(file)
+                video_file_names.append(file.filename)
+            elif os.path.splitext(file.filename)[1] == ".vtt":
+                captions_files.append(file)
+                captions_file_names.append(file.filename)
+            else:
+                print(f"Skipping file {file.filename} because of unsupported format.")
+
+        # Check if every video file has a captions file
+        for video_file_name in video_file_names:
+            file_prefix = os.path.splitext(video_file_name)[0]
+            if (file_prefix + ".vtt") not in captions_file_names:
+                raise HTTPException(status_code=400, detail=f"No captions file (.vtt) found for {video_file_name}")
+        
+        if len(video_files) == 0:
+            return HTTPException(status_code=400, detail="The uploaded files have unsupported formats. Please upload atleast one video file (.mp4) with or without captions (.vtt)")
+
+        for video_file in video_files:
+            video_file_name = os.path.splitext(video_file.filename)[0]
+            
+            # Save video file in upload_directory
+            with open(os.path.join(upload_folder, video_file.filename), 'wb') as f:
+                shutil.copyfileobj(video_file.file, f)
+
+            # Save captions file in upload directory
+            vtt_file = video_file_name + ".vtt"
+            vtt_idx = None
+            for idx, caption_file in enumerate(captions_files):
+                if caption_file.filename == vtt_file:
+                    vtt_idx = idx
+                    break
+            with open(os.path.join(upload_folder, vtt_file), 'wb') as f:
+                shutil.copyfileobj(captions_files[vtt_idx].file, f)    
+
+            # Store frames and caption annotations in a new directory
+            extract_frames_and_annotations(os.path.join(upload_folder, video_file.filename), os.path.join(upload_folder, vtt_file), os.path.join(upload_folder, video_file_name))
+
+            print(f"Stored frames and annotations in {os.path.join(upload_folder, video_file_name)}")
+        
+            # Delete temporary video and captions files
+            os.remove(os.path.join(upload_folder, video_file.filename))
+            os.remove(os.path.join(upload_folder, vtt_file))
+        
+            # Ingest multimodal data into redis
+            ingest_multimodal(video_file_name, video_file_name, video_file_name, os.path.join(upload_folder, video_file_name), mm_embeddings)
+        
+        return {"status": 200, "message": "Data preparation succeeded"}
+
+    raise HTTPException(status_code=400, detail="Must provide atleast one pair consisting of video (.mp4) and captions (.vtt)")
 
 
 @register_microservice(
@@ -368,6 +418,7 @@ async def delete_videos():
 
 if __name__ == "__main__":
     create_upload_folder(upload_folder)
-    opea_microservices["opea_service@prepare_doc_redis"].start()
+    opea_microservices["opea_service@prepare_doc_redis_videos"].start()
+    opea_microservices["opea_service@prepare_doc_redis_videos_captions"].start()
     opea_microservices["opea_service@prepare_doc_redis_file"].start()
     opea_microservices["opea_service@prepare_doc_redis_del"].start()
