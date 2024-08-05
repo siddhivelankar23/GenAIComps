@@ -292,8 +292,8 @@ def format_timestamp_for_transcript(seconds: float, always_include_hours: bool =
 def write_vtt(transcript: Iterator[dict], vtt_path: str):
     """Write transcripts to a .vtt file"""
     with open(vtt_path, 'a') as file:
-        file.writer("WEBVTT\n")
-        for segment in transcript:
+        file.write("WEBVTT\n")
+        for segment in transcript['segments']:
             text = (segment['text']).replace('-->', '->')
             file.write(f"{format_timestamp_for_transcript(segment['start'])} --> {format_timestamp_for_transcript(segment['end'])}\n")
             file.write(f"{text}\n")

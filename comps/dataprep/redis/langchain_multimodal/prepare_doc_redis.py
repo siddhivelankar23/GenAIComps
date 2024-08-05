@@ -110,8 +110,8 @@ class MultimodalRedis(Redis):
                 raise ValueError("Metadatas must be a list of dicts")
             generated_schema = _generate_field_schema(metadatas[0])
         
-        if index_schema:
-            index_schema = generated_schema
+            if not index_schema:
+                index_schema = generated_schema
 
         # Create instance
         instance = cls(
@@ -303,7 +303,7 @@ async def ingest_videos(
             # Save transcript as vtt file and delete audio file
             vtt_file = video_file_name + ".vtt"
             write_vtt(transcripts, os.path.join(upload_folder, vtt_file))
-            delete_audio_file
+            delete_audio_file(os.path.join(upload_folder, audio_file))
 
             # Store frames and caption annotations in a new directory
             extract_frames_and_annotations(os.path.join(upload_folder, video_file.filename), os.path.join(upload_folder, vtt_file), os.path.join(upload_folder, video_file_name))
