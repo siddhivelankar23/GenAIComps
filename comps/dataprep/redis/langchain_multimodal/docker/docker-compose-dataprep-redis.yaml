@@ -13,6 +13,7 @@ services:
     image: opea/dataprep-redis:latest
     container_name: dataprep-redis-server
     ports:
+      - "6006:6006"
       - "6007:6007"
       - "6008:6008"
       - "6009:6009"
