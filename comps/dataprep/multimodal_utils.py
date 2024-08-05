@@ -164,8 +164,6 @@ class BridgeTowerEmbeddings(BaseModel, Embeddings):
         """Configuration for this pydantic object."""
         extra = Extra.forbid
 
-    # TODO(tile): This does not work if batch and if texts have different length. 
-    # Should implement as we did in FinetunedBridgeTowerEmbeddingChestXraypy
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
         """Embed a list of documents using BridgeTower.
 
@@ -210,7 +208,6 @@ class BridgeTowerEmbeddings(BaseModel, Embeddings):
         text_list = []
         embeddings = []
         for path_to_img, text in zip(images, texts):
-            # print(path_to_img)
             img = read_image(path_to_img, mode=ImageReadMode.RGB)
             img = transform.to_pil_image(img)
             image_list.append(img)

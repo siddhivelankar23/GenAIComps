@@ -41,8 +41,6 @@ except Exception as e:
 
 
 upload_folder = "./uploaded_files/"
-whisper_model = load_whisper_model(model_name="base")
-mm_embeddings = BridgeTowerEmbeddings(model_name=EMBED_MODEL, device=device)
 
 
 class MultimodalRedis(Redis):
@@ -232,7 +230,7 @@ def prepare_data_and_metadata_from_annotation(annotation, path_to_frames, title,
     return text_list, image_list, metadatas
 
 
-def ingest_multimodal(title, title_for_embedding, description, data_folder, embeddings):
+def ingest_multimodal(title, title_for_embedding, description, data_folder):
     """
     Ingest text image pairs to Redis from the data/ directory that consists of frames and annotations
     """
@@ -241,6 +239,8 @@ def ingest_multimodal(title, title_for_embedding, description, data_folder, embe
     path_to_frames = os.path.join(data_folder, 'frames')
 
     annotation = load_json_file(annotation_file_path)
+
+    embeddings = BridgeTowerEmbeddings(model_name=EMBED_MODEL, device=device)
 
     #prepare data to ingest
     text_list, image_list, metadatas = prepare_data_and_metadata_from_annotation(annotation, path_to_frames, title, description)
@@ -297,6 +297,7 @@ async def ingest_videos(
             convert_video_to_audio(os.path.join(upload_folder, video_file.filename), os.path.join(upload_folder, audio_file))
                 
             # Extract transcript from audio
+            whisper_model = load_whisper_model(model_name="large-v2")
             transcripts = extract_transcript_from_audio(whisper_model, os.path.join(upload_folder, audio_file))
 
             # Save transcript as vtt file and delete audio file
@@ -314,7 +315,7 @@ async def ingest_videos(
             os.remove(os.path.join(upload_folder, vtt_file))
         
             # Ingest multimodal data into redis
-            ingest_multimodal(video_file_name, video_file_name, video_file_name, os.path.join(upload_folder, video_file_name), mm_embeddings)
+            ingest_multimodal(video_file_name, video_file_name, video_file_name, os.path.join(upload_folder, video_file_name))
         
         return {"status": 200, "message": "Data preparation succeeded"}
 
@@ -377,7 +378,7 @@ async def ingest_videos(
             os.remove(os.path.join(upload_folder, vtt_file))
         
             # Ingest multimodal data into redis
-            ingest_multimodal(video_file_name, video_file_name, video_file_name, os.path.join(upload_folder, video_file_name), mm_embeddings)
+            ingest_multimodal(video_file_name, video_file_name, video_file_name, os.path.join(upload_folder, video_file_name))
         
         return {"status": 200, "message": "Data preparation succeeded"}
 
