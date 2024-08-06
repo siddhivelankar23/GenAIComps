@@ -231,7 +231,7 @@ def prepare_data_and_metadata_from_annotation(annotation, path_to_frames, title,
     return text_list, image_list, metadatas
 
 
-def ingest_multimodal(title, title_for_embedding, description, data_folder, embeddings):
+def ingest_multimodal(title, title_for_embedding, description, data_folder):
     """
     Ingest text image pairs to Redis from the data/ directory that consists of frames and annotations
     """
@@ -240,6 +240,8 @@ def ingest_multimodal(title, title_for_embedding, description, data_folder, embe
     path_to_frames = os.path.join(data_folder, 'frames')
 
     annotation = load_json_file(annotation_file_path)
+
+    embeddings = BridgeTowerEmbeddings(model_name=EMBED_MODEL, device=device)
 
     #prepare data to ingest
     text_list, image_list, metadatas = prepare_data_and_metadata_from_annotation(annotation, path_to_frames, title, description)
@@ -286,12 +288,6 @@ async def ingest_videos(
         if len(video_files) == 0:
             return HTTPException(status_code=400, detail="The uploaded files have unsupported formats. Please upload atleast one video file (.mp4)")
 
-        # Load whisper model object for transcribing
-        whisper_model = load_whisper_model(model_name=WHISPER_MODEL)
-
-        # Load embeddings model
-        embeddings = BridgeTowerEmbeddings(model_name=EMBED_MODEL, device=device)
-
         for video_file in video_files:
             video_file_name = os.path.splitext(video_file.filename)[0]
             
@@ -304,6 +300,7 @@ async def ingest_videos(
             convert_video_to_audio(os.path.join(upload_folder, video_file.filename), os.path.join(upload_folder, audio_file))
                 
             # Extract transcript from audio
+            whisper_model = load_whisper_model(model_name=WHISPER_MODEL)
             transcripts = extract_transcript_from_audio(whisper_model, os.path.join(upload_folder, audio_file))
 
             # Save transcript as vtt file and delete audio file
@@ -321,7 +318,7 @@ async def ingest_videos(
             os.remove(os.path.join(upload_folder, vtt_file))
         
             # Ingest multimodal data into redis
-            ingest_multimodal(video_file_name, video_file_name, video_file_name, os.path.join(upload_folder, video_file_name), embeddings)
+            ingest_multimodal(video_file_name, video_file_name, video_file_name, os.path.join(upload_folder, video_file_name))
         
         return {"status": 200, "message": "Data preparation succeeded"}
 
@@ -348,9 +345,6 @@ async def ingest_videos(
         if len(video_files) == 0:
             return HTTPException(status_code=400, detail="The uploaded files have unsupported formats. Please upload atleast one video file (.mp4)")
 
-        # Load embeddings model
-        embeddings = BridgeTowerEmbeddings(model_name=EMBED_MODEL, device=device)
-
         for video_file in video_files:
             video_file_name = os.path.splitext(video_file.filename)[0]
             
@@ -368,7 +362,7 @@ async def ingest_videos(
             os.remove(os.path.join(upload_folder, video_file.filename))
         
             # Ingest multimodal data into redis
-            ingest_multimodal(video_file_name, video_file_name, video_file_name, os.path.join(upload_folder, video_file_name), embeddings)
+            ingest_multimodal(video_file_name, video_file_name, video_file_name, os.path.join(upload_folder, video_file_name))
         
         return {"status": 200, "message": "Data preparation succeeded"}
 
@@ -405,9 +399,6 @@ async def ingest_videos(
         if len(video_files) == 0:
             return HTTPException(status_code=400, detail="The uploaded files have unsupported formats. Please upload atleast one video file (.mp4) with captions (.vtt)")
 
-        # Load embeddings model
-        embeddings = BridgeTowerEmbeddings(model_name=EMBED_MODEL, device=device)
-
         for video_file in video_files:
             video_file_name = os.path.splitext(video_file.filename)[0]
             
@@ -435,7 +426,7 @@ async def ingest_videos(
             os.remove(os.path.join(upload_folder, vtt_file))
         
             # Ingest multimodal data into redis
-            ingest_multimodal(video_file_name, video_file_name, video_file_name, os.path.join(upload_folder, video_file_name), embeddings)
+            ingest_multimodal(video_file_name, video_file_name, video_file_name, os.path.join(upload_folder, video_file_name))
         
         return {"status": 200, "message": "Data preparation succeeded"}
 
