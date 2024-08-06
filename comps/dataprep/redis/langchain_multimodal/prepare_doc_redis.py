@@ -8,7 +8,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Type, Union
 
-from config import EMBED_MODEL, WHISPER_MODEL, INDEX_NAME, INDEX_SCHEMA, REDIS_URL
+from config import EMBED_MODEL, WHISPER_MODEL, INDEX_NAME, INDEX_SCHEMA, REDIS_URL, LVM_ENDPOINT
 from fastapi import File, HTTPException, UploadFile
 from langchain_core.embeddings import Embeddings
 from langchain_core.utils import get_from_dict_or_env
@@ -27,7 +27,8 @@ from comps.dataprep.multimodal_utils import (
     extract_transcript_from_audio,
     write_vtt,
     delete_audio_file,
-    extract_frames_and_annotations
+    extract_frames_and_annotations_from_transcripts,
+    extract_frames_and_generate_captions
 )
 
 try: 
@@ -265,11 +266,13 @@ def drop_index(index_name, redis_url=REDIS_URL):
     return True
 
 
-@register_microservice(name="opea_service@prepare_doc_redis_videos", endpoint="/v1/dataprep/upload_videos", host="0.0.0.0", port=6006)
+@register_microservice(name="opea_service@prepare_doc_redis_generate_transcripts", endpoint="/v1/dataprep/generate_transcripts", host="0.0.0.0", port=6005)
 @traceable(run_type="tool")
 async def ingest_videos(
     files:  List[UploadFile] = File(None)
 ):
+    """Upload videos with speech, generate transcripts using whisper and ingest into redis"""
+    
     print(f"files:{files}")
 
     if files:
@@ -281,7 +284,7 @@ async def ingest_videos(
                 print(f"Skipping file {file.filename} as it's not an mp4 file.")
         
         if len(video_files) == 0:
-            return HTTPException(status_code=400, detail="The uploaded files have unsupported formats. Please upload atleast one video file (.mp4) with or without captions (.vtt)")
+            return HTTPException(status_code=400, detail="The uploaded files have unsupported formats. Please upload atleast one video file (.mp4)")
 
         # Load whisper model object for transcribing
         whisper_model = load_whisper_model(model_name=WHISPER_MODEL)
@@ -309,7 +312,7 @@ async def ingest_videos(
             delete_audio_file(os.path.join(upload_folder, audio_file))
 
             # Store frames and caption annotations in a new directory
-            extract_frames_and_annotations(os.path.join(upload_folder, video_file.filename), os.path.join(upload_folder, vtt_file), os.path.join(upload_folder, video_file_name))
+            extract_frames_and_annotations_from_transcripts(os.path.join(upload_folder, video_file.filename), os.path.join(upload_folder, vtt_file), os.path.join(upload_folder, video_file_name))
 
             print(f"Stored frames and annotations in {os.path.join(upload_folder, video_file_name)}")
         
@@ -325,7 +328,55 @@ async def ingest_videos(
     raise HTTPException(status_code=400, detail="Must provide atleast one video (.mp4) file.")
 
 
-@register_microservice(name="opea_service@prepare_doc_redis_videos_captions", endpoint="/v1/dataprep/upload_videos_captions", host="0.0.0.0", port=6007)
+@register_microservice(name="opea_service@prepare_doc_redis_generate_captions", endpoint="/v1/dataprep/generate_captions", host="0.0.0.0", port=6006)
+@traceable(run_type="tool")
+async def ingest_videos(
+    files:  List[UploadFile] = File(None)
+):
+    """Upload videos without speech (only background music or no audio), generate captions using lvm microservice and ingest into redis"""
+    
+    print(f"files:{files}")
+
+    if files:
+        video_files = []
+        for file in files:
+            if os.path.splitext(file.filename)[1] == ".mp4":
+                video_files.append(file)
+            else:
+                print(f"Skipping file {file.filename} as it's not an mp4 file.")
+        
+        if len(video_files) == 0:
+            return HTTPException(status_code=400, detail="The uploaded files have unsupported formats. Please upload atleast one video file (.mp4)")
+
+        # Load embeddings model
+        embeddings = BridgeTowerEmbeddings(model_name=EMBED_MODEL, device=device)
+
+        for video_file in video_files:
+            video_file_name = os.path.splitext(video_file.filename)[0]
+            
+            # Save video file in upload_directory
+            with open(os.path.join(upload_folder, video_file.filename), 'wb') as f:
+                shutil.copyfileobj(video_file.file, f)
+
+
+            # Store frames and caption annotations in a new directory
+            extract_frames_and_generate_captions(os.path.join(upload_folder, video_file.filename), LVM_ENDPOINT, os.path.join(upload_folder, video_file_name))
+
+            print(f"Stored frames and annotations in {os.path.join(upload_folder, video_file_name)}")
+        
+            # Delete temporary video and captions files
+            os.remove(os.path.join(upload_folder, video_file.filename))
+        
+            # Ingest multimodal data into redis
+            ingest_multimodal(video_file_name, video_file_name, video_file_name, os.path.join(upload_folder, video_file_name), embeddings)
+        
+        return {"status": 200, "message": "Data preparation succeeded"}
+
+    raise HTTPException(status_code=400, detail="Must provide atleast one video (.mp4) file.")
+
+
+
+@register_microservice(name="opea_service@prepare_doc_redis_videos_with_transcripts", endpoint="/v1/dataprep/videos_with_transcripts", host="0.0.0.0", port=6007)
 @traceable(run_type="tool")
 async def ingest_videos(
     files:  List[UploadFile] = File(None)
@@ -352,7 +403,7 @@ async def ingest_videos(
                 raise HTTPException(status_code=400, detail=f"No captions file (.vtt) found for {video_file_name}")
         
         if len(video_files) == 0:
-            return HTTPException(status_code=400, detail="The uploaded files have unsupported formats. Please upload atleast one video file (.mp4) with or without captions (.vtt)")
+            return HTTPException(status_code=400, detail="The uploaded files have unsupported formats. Please upload atleast one video file (.mp4) with captions (.vtt)")
 
         # Load embeddings model
         embeddings = BridgeTowerEmbeddings(model_name=EMBED_MODEL, device=device)
@@ -375,7 +426,7 @@ async def ingest_videos(
                 shutil.copyfileobj(captions_files[vtt_idx].file, f)    
 
             # Store frames and caption annotations in a new directory
-            extract_frames_and_annotations(os.path.join(upload_folder, video_file.filename), os.path.join(upload_folder, vtt_file), os.path.join(upload_folder, video_file_name))
+            extract_frames_and_annotations_from_transcripts(os.path.join(upload_folder, video_file.filename), os.path.join(upload_folder, vtt_file), os.path.join(upload_folder, video_file_name))
 
             print(f"Stored frames and annotations in {os.path.join(upload_folder, video_file_name)}")
         
@@ -392,7 +443,7 @@ async def ingest_videos(
 
 
 @register_microservice(
-    name="opea_service@prepare_doc_redis_file", endpoint="/v1/dataprep/get_file", host="0.0.0.0", port=6008
+    name="opea_service@prepare_doc_redis_get_videos", endpoint="/v1/dataprep/get_videos", host="0.0.0.0", port=6008
 )
 @traceable(run_type="tool")
 async def rag_get_file_structure():
@@ -407,7 +458,7 @@ async def rag_get_file_structure():
 
 
 @register_microservice(
-    name="opea_service@prepare_doc_redis_del", endpoint="/v1/dataprep/delete_file", host="0.0.0.0", port=6009
+    name="opea_service@prepare_doc_redis_delete_videos", endpoint="/v1/dataprep/delete_videos", host="0.0.0.0", port=6009
 )
 @traceable(run_type="tool")
 async def delete_videos():
@@ -425,7 +476,8 @@ async def delete_videos():
 
 if __name__ == "__main__":
     create_upload_folder(upload_folder)
-    opea_microservices["opea_service@prepare_doc_redis_videos"].start()
-    opea_microservices["opea_service@prepare_doc_redis_videos_captions"].start()
-    opea_microservices["opea_service@prepare_doc_redis_file"].start()
-    opea_microservices["opea_service@prepare_doc_redis_del"].start()
+    opea_microservices["opea_service@prepare_doc_redis_generate_transcripts"].start()
+    opea_microservices["opea_service@prepare_doc_redis_generate_captions"].start()
+    opea_microservices["opea_service@prepare_doc_redis_videos_with_transcripts"].start()
+    opea_microservices["opea_service@prepare_doc_redis_get_videos"].start()
+    opea_microservices["opea_service@prepare_doc_redis_delete_videos"].start()

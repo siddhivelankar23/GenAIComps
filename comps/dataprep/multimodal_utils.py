@@ -1,6 +1,8 @@
+import base64
 import json
 import os
 from pathlib import Path
+import requests
 from typing import List, Optional, Tuple, Union, Iterator, Any
 
 import cv2
@@ -319,7 +321,7 @@ def str2time(strtime: str):
     return total_seconds
 
 
-def extract_frames_and_annotations(video_path: str, captions_path: str, output_dir: str):
+def extract_frames_and_annotations_from_transcripts(video_path: str, captions_path: str, output_dir: str):
     """Extract frames (.jpg) and annotations (.json) from video file (.mp4) and captions file (.vtt)"""
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(os.path.join(output_dir, 'frames'), exist_ok=True)
@@ -360,6 +362,79 @@ def extract_frames_and_annotations(video_path: str, captions_path: str, output_d
                 'video_path' : video_path,
                 'sub_video_id' : idx,
             })
+        
+    # Save transcript annotations as json file
+    with open(os.path.join(output_dir, 'annotations.json'), 'w') as f:
+        json.dump(annotations, f)
+    
+    vidcap.release()
+
+
+def convert_img_to_base64(image_path: str):
+    "Convert image to base 64 string"
+    with open(image_path, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read())
+    return encoded_string.decode()
+
+
+def use_lvm(endpoint: str, img_b64_string: str, prompt: str ="Describe this scene in detail."):
+    """Generate image captions descriptions using LVM microservice"""
+    inputs = {"image": img_b64_string, "prompt": prompt, "max_new_tokens": 32}
+    response = requests.post(url=endpoint, data=json.dumps(inputs))
+    return response.json()["text"]
+
+
+def extract_frames_and_generate_captions(video_path: str, lvm_endpoint: str, output_dir: str, key_frame_per_second: int = 1):
+    """Extract frames (.jpg) and annotations (.json) from video file (.mp4) by generating captions using LVM microservice"""
+    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(os.path.join(output_dir, 'frames'), exist_ok=True)
+
+    # Load video and get fps
+    vidcap = cv2.VideoCapture(video_path)
+    fps = vidcap.get(cv2.CAP_PROP_FPS)
+
+    annotations = []
+    hop = round(fps / key_frame_per_second)
+    curr_frame = 0
+    idx = -1
+    
+    while True:
+        ret, frame = vidcap.read()
+        if not ret: 
+            break
+        
+        if curr_frame % hop == 0:
+            idx += 1
+
+            mid_time = vidcap.get(cv2.CAP_PROP_POS_MSEC)
+            mid_time_ms = mid_time * 1000
+
+            # Save frame
+            frame_no = curr_frame
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            img_fname = f'frame_{idx}'
+            img_fpath = os.path.join(output_dir, 'frames', img_fname + '.jpg')
+            cv2.imwrite(img_fpath, frame)
+
+            # Caption generation using LVM microservice
+            img_b64_str = convert_img_to_base64(img_fpath)
+            caption = use_lvm(lvm_endpoint, img_b64_str)
+            caption = caption.strip()
+            text = caption.replace('\n', ' ')
+
+
+            # Create annotations for frame from transcripts
+            annotations.append({
+                'image_id': idx,
+                'img_fname': img_fname,
+                'caption': text,
+                'time': mid_time_ms,
+                'frame_no': frame_no,
+                'video_path' : video_path,
+                'sub_video_id' : idx,
+            })
+        
+        curr_frame += 1
         
     # Save transcript annotations as json file
     with open(os.path.join(output_dir, 'annotations.json'), 'w') as f:

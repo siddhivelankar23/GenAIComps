@@ -11,6 +11,9 @@ WHISPER_MODEL = os.getenv("WHISPER_MODEL", "large-v2")
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 
+# Lvm Microservice Information
+LVM_ENDPOINT=os.getenv("LVM_ENDPOINT", "http://localhost:9399/v1/lvm")
+
 
 def get_boolean_env_var(var_name, default_value=False):
     """Retrieve the boolean value of an environment variable.
