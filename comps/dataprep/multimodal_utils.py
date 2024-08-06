@@ -272,7 +272,7 @@ def extract_transcript_from_audio(whisper_model, audio_path: str):
     return whisper_model.transcribe(audio_path, **options)
 
 
-def format_timestamp_for_transcript(seconds: float, always_include_hours: bool = False, fractionalSeperator: str = '.'):
+def format_timestamp_for_transcript(seconds: float, always_include_hours: bool = True, fractionalSeperator: str = '.'):
     """Format timestamp for video transcripts"""
     milliseconds = round(seconds * 1000.0)
 
@@ -292,11 +292,11 @@ def format_timestamp_for_transcript(seconds: float, always_include_hours: bool =
 def write_vtt(transcript: Iterator[dict], vtt_path: str):
     """Write transcripts to a .vtt file"""
     with open(vtt_path, 'a') as file:
-        file.write("WEBVTT\n")
+        file.write("WEBVTT\n\n")
         for segment in transcript['segments']:
             text = (segment['text']).replace('-->', '->')
             file.write(f"{format_timestamp_for_transcript(segment['start'])} --> {format_timestamp_for_transcript(segment['end'])}\n")
-            file.write(f"{text}\n")
+            file.write(f"{text.strip()}\n\n")
 
 
 def delete_audio_file(audio_path: str):
@@ -343,13 +343,14 @@ def extract_frames_and_annotations(video_path: str, captions_path: str, output_d
         mid_time_ms = mid_time * 1000 
         vidcap.set(cv2.CAP_PROP_POS_MSEC, mid_time_ms)
         success, frame = vidcap.read()
+        
         if success:
             # Save frame as jpg file
             img_fname = f"frame_{idx}"
             img_fpath = os.path.join(output_dir, 'frames', img_fname + '.jpg')
             cv2.imwrite(img_fpath, frame)
 
-            # Create annotations for frame
+            # Create annotations for frame from transcripts
             annotations.append({
                 'image_id': idx,
                 'img_fname': img_fname,
@@ -360,8 +361,8 @@ def extract_frames_and_annotations(video_path: str, captions_path: str, output_d
                 'sub_video_id' : idx,
             })
         
-    # Save annotations as json file
+    # Save transcript annotations as json file
     with open(os.path.join(output_dir, 'annotations.json'), 'w') as f:
         json.dump(annotations, f)
-        
+    
     vidcap.release()
