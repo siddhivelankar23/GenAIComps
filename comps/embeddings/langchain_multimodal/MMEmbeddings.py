@@ -11,7 +11,7 @@ import torch
 from PIL import Image
 from torchvision.io import ImageReadMode, read_image
 import torchvision.transforms.functional as transform
-from mm_rag_redis.multimodal_config import EMBED_MODEL
+
 
 try: 
     import habana_frameworks.torch.core as htcore
@@ -23,8 +23,8 @@ except ImportModuleError :
     else:
         device = 'cpu'
         
-# model_name = 'BridgeTower/bridgetower-large-itm-mlm-itc'
-model_name = EMBED_MODEL
+model_name = 'BridgeTower/bridgetower-large-itm-mlm-itc'
+#model_name = EMBED_MODEL
 print(f"Embedding model is {model_name}")
 
 
