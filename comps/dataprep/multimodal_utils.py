@@ -377,8 +377,8 @@ def convert_img_to_base64(image_path: str):
     return encoded_string.decode()
 
 
-def use_lvm(endpoint: str, img_b64_string: str, prompt: str ="Describe this scene in detail."):
-    """Generate image captions descriptions using LVM microservice"""
+def use_lvm(endpoint: str, img_b64_string: str, prompt: str ="Provide a short description for this scene."):
+    """Generate image captions/descriptions using LVM microservice"""
     inputs = {"image": img_b64_string, "prompt": prompt, "max_new_tokens": 32}
     response = requests.post(url=endpoint, data=json.dumps(inputs))
     return response.json()["text"]
