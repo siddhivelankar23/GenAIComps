@@ -27,31 +27,6 @@ services:
       LANGCHAIN_API_KEY: ${LANGCHAIN_API_KEY}
       LVM_ENDPOINT: ${LVM_ENDPOINT}
     restart: unless-stopped
-  llava-server:
-    image: opea/llava:latest
-    container_name: llava-server
-    ports:
-      - "8399:8399"
-    ipc: host
-    runtime: habana
-    cap-add: sys_nice
-    environment:
-      http_proxy: ${http_proxy}
-      https_proxy: ${https_proxy}
-      HABANA_VISIBLE_DEVICES: all
-      OMPI_MCA_btl_vader_single_copy_mechanism: none
-    restart: unless-stopped
-  lvm-service:
-    image: opea/lvm:latest
-    container_name: lvm-server
-    ports:
-      - "9399:9399"
-    ipc: host
-    environment:
-      no_proxy: ${no_proxy}
-      http_proxy: ${http_proxy}
-      https_proxy: ${https_proxy}
-      LVM_ENDPOINT: ${LLAVA_ENPOINT}
 
 networks:
   default:
