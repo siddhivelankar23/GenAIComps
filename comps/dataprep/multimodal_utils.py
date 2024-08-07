@@ -235,6 +235,7 @@ class BridgeTowerEmbeddings(BaseModel, Embeddings):
     
 
 def create_upload_folder(upload_path):
+    """Create a directory to store uploaded video data"""
     if not os.path.exists(upload_path):
         Path(upload_path).mkdir(parents=True, exist_ok=True)
 
@@ -244,6 +245,17 @@ def load_json_file(file_path):
     with open(file_path, 'r') as file:
         data = json.load(file)
     return data
+
+
+def clear_upload_folder(upload_path):
+    """Clear the upload directory"""
+    for root, dirs, files in os.walk(upload_path, topdown=False):
+        for file in files:
+            file_path = os.path.join(root, file)
+            os.remove(file_path)
+        for dir in dirs:
+            dir_path = os.path.join(root, dir)
+            os.rmdir(dir_path)
 
 
 def convert_video_to_audio(video_path: str, output_audio_path: str):

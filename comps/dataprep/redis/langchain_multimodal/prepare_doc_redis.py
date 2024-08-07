@@ -3,7 +3,6 @@
 
 import os
 import shutil
-import torch
 import uuid
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Type, Union
@@ -22,6 +21,7 @@ from comps.dataprep.multimodal_utils import (
     BridgeTowerEmbeddings,
     create_upload_folder,
     load_json_file,
+    clear_upload_folder,
     convert_video_to_audio,
     load_whisper_model,
     extract_transcript_from_audio,
@@ -248,12 +248,12 @@ def ingest_multimodal(title, title_for_embedding, description, data_folder, embe
 
 
 def drop_index(index_name, redis_url=REDIS_URL):
-    print(f"[ drop index ] dropping index {index_name}")
+    print(f"dropping index {index_name}")
     try:
         assert Redis.drop_index(index_name=index_name, delete_documents=True, redis_url=redis_url)
-        print(f"[ drop index ] index {index_name} deleted")
+        print(f"index {index_name} deleted")
     except Exception as e:
-        print(f"[ drop index ] index {index_name} delete failed: {e}")
+        print(f"index {index_name} delete failed: {e}")
         return False
     return True
 
@@ -458,11 +458,10 @@ async def delete_videos():
     index_deleted = drop_index(index_name=INDEX_NAME)
 
     if not index_deleted:
-        raise HTTPException(status_code=409, detail="Uploaded videos could not be deleted.")
+        raise HTTPException(status_code=409, detail="Uploaded videos could not be deleted. Index does not exist")
 
-    shutil.rmtree(upload_folder)
+    clear_upload_folder(upload_folder)
     print("Successfully deleted all uploaded videos.")
-    create_upload_folder(upload_folder)
     return {"status": True}
 
 
