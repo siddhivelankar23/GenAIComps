@@ -150,7 +150,7 @@ class BridgeTowerForITC(BridgeTowerPreTrainedModel):
 class BridgeTowerEmbeddings(BaseModel, Embeddings):
     """ BridgeTower embedding model """
     model_name: str = "BridgeTower/bridgetower-large-itm-mlm-itc"
-    device: str = "hpu"
+    device: str = "cpu"
     text_model : Any
     processor: Any
     model: Any

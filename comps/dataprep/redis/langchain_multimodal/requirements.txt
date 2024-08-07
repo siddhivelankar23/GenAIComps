@@ -10,7 +10,6 @@ openai-whisper
 opentelemetry-api
 opentelemetry-exporter-otlp
 opentelemetry-sdk
-optimum[habana]
 Pillow
 prometheus-fastapi-instrumentator
 pydantic==2.8.2
