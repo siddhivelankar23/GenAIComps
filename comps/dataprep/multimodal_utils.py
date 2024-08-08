@@ -389,6 +389,7 @@ def extract_frames_and_annotations_from_transcripts(video_id: str, video_path: s
                 'caption': text,
                 'time': mid_time_ms,
                 'frame_no': frame_no,
+                'sub_video_id': idx,
             })
     
     # Save transcript annotations as json file for further processing
@@ -451,11 +452,12 @@ def extract_frames_and_generate_captions(video_id: str, video_path: str, lvm_end
             # Create annotations for frame from transcripts
             annotations.append({
                 'video_id': video_id,
-                'video_path' : os.path.basename(video_path),
+                'video_name' : os.path.basename(video_path),
                 'b64_img_str': b64_img_str,
                 'caption': text,
                 'time': mid_time_ms,
                 'frame_no': frame_no,
+                'sub_video_id': idx,
             })
         
         curr_frame += 1

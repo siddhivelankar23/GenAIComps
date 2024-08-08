@@ -406,7 +406,7 @@ async def ingest_videos(
         for video_file_name in video_file_names:
             file_prefix = os.path.splitext(video_file_name)[0]
             if (file_prefix + ".vtt") not in captions_file_names:
-                raise HTTPException(status_code=400, detail=f"No captions file {file_prefix + ".vtt"} found for {video_file_name}")
+                raise HTTPException(status_code=400, detail=f"No captions file {file_prefix}.vtt found for {video_file_name}")
         
         if len(video_files) == 0:
             return HTTPException(status_code=400, detail="The uploaded files have unsupported formats. Please upload atleast one video file (.mp4) with captions (.vtt)")
