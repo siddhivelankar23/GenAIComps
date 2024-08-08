@@ -272,10 +272,7 @@ async def ingest_videos(
             if os.path.splitext(file.filename)[1] == ".mp4":
                 video_files.append(file)
             else:
-                print(f"Skipping file {file.filename} as it's not an mp4 file.")
-        
-        if len(video_files) == 0:
-            return HTTPException(status_code=400, detail="The uploaded files have unsupported formats. Please upload atleast one video file (.mp4)")
+                raise HTTPException(status_code=400, detail=f"File {file.filename} is not an mp4 file. Please upload mp4 files only.")
         
         # Load whisper model
         whisper_model = load_whisper_model(model_name=WHISPER_MODEL)
@@ -290,7 +287,8 @@ async def ingest_videos(
             video_id = generate_video_id()
 
             # Create video file name by appending identifier
-            video_file_name = f"{os.path.splitext(video_file.filename)[0]}_{video_id}.mp4"
+            video_name = os.path.splitext(video_file.filename)[0]
+            video_file_name = f"{video_name}_{video_id}.mp4"
             video_dir_name = os.path.splitext(video_file_name)[0]
             
             # Save video file in upload_directory
@@ -316,7 +314,7 @@ async def ingest_videos(
             os.remove(os.path.join(upload_folder, vtt_file))
         
             # Ingest multimodal data into redis
-            ingest_multimodal(video_file_name, video_dir_name, video_dir_name, os.path.join(upload_folder, video_dir_name), embeddings)
+            ingest_multimodal(video_file_name, video_name, video_name, os.path.join(upload_folder, video_dir_name), embeddings)
 
             # Delete temporary video directory containing frames and annotations
             shutil.rmtree(os.path.join(upload_folder, video_dir_name))
@@ -341,10 +339,7 @@ async def ingest_videos(
             if os.path.splitext(file.filename)[1] == ".mp4":
                 video_files.append(file)
             else:
-                print(f"Skipping file {file.filename} as it's not an mp4 file.")
-        
-        if len(video_files) == 0:
-            return HTTPException(status_code=400, detail="The uploaded files have unsupported formats. Please upload atleast one video file (.mp4)")
+                raise HTTPException(status_code=400, detail=f"File {file.filename} is not an mp4 file. Please upload mp4 files only.")
 
         # Load embeddings model
         embeddings = BridgeTowerEmbeddings(model_name=EMBED_MODEL, device=device)
@@ -356,7 +351,8 @@ async def ingest_videos(
             video_id = generate_video_id()
 
             # Create video file name by appending identifier
-            video_file_name = f"{os.path.splitext(video_file.filename)[0]}_{video_id}.mp4"
+            video_name = os.path.splitext(video_file.filename)[0]
+            video_file_name = f"{video_name}_{video_id}.mp4"
             video_dir_name = os.path.splitext(video_file_name)[0]
             
             # Save video file in upload_directory
@@ -367,7 +363,7 @@ async def ingest_videos(
             extract_frames_and_generate_captions(video_id, os.path.join(upload_folder, video_file_name), LVM_ENDPOINT, os.path.join(upload_folder, video_dir_name))
         
             # Ingest multimodal data into redis
-            ingest_multimodal(video_file_name, video_dir_name, video_dir_name, os.path.join(upload_folder, video_dir_name), embeddings)
+            ingest_multimodal(video_file_name, video_name, video_name, os.path.join(upload_folder, video_dir_name), embeddings)
 
             # Delete temporary video directory containing frames and annotations
             shutil.rmtree(os.path.join(upload_folder, video_dir_name))
@@ -403,7 +399,7 @@ async def ingest_videos(
         for video_file_name in video_file_names:
             file_prefix = os.path.splitext(video_file_name)[0]
             if (file_prefix + ".vtt") not in captions_file_names:
-                raise HTTPException(status_code=400, detail=f"No captions file (.vtt) found for {video_file_name}")
+                raise HTTPException(status_code=400, detail=f"No captions file {file_prefix + ".vtt"} found for {video_file_name}")
         
         if len(video_files) == 0:
             return HTTPException(status_code=400, detail="The uploaded files have unsupported formats. Please upload atleast one video file (.mp4) with captions (.vtt)")
@@ -418,7 +414,8 @@ async def ingest_videos(
             video_id = generate_video_id()
 
             # Create video file name by appending identifier
-            video_file_name = f"{os.path.splitext(video_file.filename)[0]}_{video_id}.mp4"
+            video_name = os.path.splitext(video_file.filename)[0]
+            video_file_name = f"{video_name}_{video_id}.mp4"
             video_dir_name = os.path.splitext(video_file_name)[0]
             
             # Save video file in upload_directory
@@ -460,7 +457,7 @@ async def ingest_videos(
 )
 @traceable(run_type="tool")
 async def rag_get_file_structure():
-    """Returns list of names of uploaded videos"""
+    """Returns list of names of uploaded videos saved on the server"""
 
     if not Path(upload_folder).exists():
         print("No file uploaded, return empty list.")
