@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import requests
 from typing import List, Optional, Tuple, Union, Iterator, Any
+import uuid
 
 import cv2
 import torch
@@ -258,6 +259,11 @@ def clear_upload_folder(upload_path):
             os.rmdir(dir_path)
 
 
+def generate_video_id():
+    """Generates a unique identifier for a video file"""
+    return str(uuid.uuid4())
+
+
 def convert_video_to_audio(video_path: str, output_audio_path: str):
     """Converts video to audio using MoviePy library that uses `ffmpeg` under the hood.
     
@@ -333,8 +339,16 @@ def str2time(strtime: str):
     return total_seconds
 
 
-def extract_frames_and_annotations_from_transcripts(video_path: str, captions_path: str, output_dir: str):
+def convert_img_to_base64(image):
+    "Convert image to base64 string"
+    _, buffer = cv2.imencode('.jpg', image)
+    encoded_string = base64.b64encode(buffer)
+    return encoded_string.decode()
+
+
+def extract_frames_and_annotations_from_transcripts(video_id: str, video_path: str, vtt_path: str, output_dir: str):
     """Extract frames (.jpg) and annotations (.json) from video file (.mp4) and captions file (.vtt)"""
+    # Set up location to store frames and annotations
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(os.path.join(output_dir, 'frames'), exist_ok=True)
 
@@ -343,7 +357,7 @@ def extract_frames_and_annotations_from_transcripts(video_path: str, captions_pa
     fps = vidcap.get(cv2.CAP_PROP_FPS)
 
     # read captions file
-    captions = webvtt.read(captions_path)
+    captions = webvtt.read(vtt_path)
 
     annotations = []
     for idx, caption in enumerate(captions):
@@ -359,34 +373,29 @@ def extract_frames_and_annotations_from_transcripts(video_path: str, captions_pa
         success, frame = vidcap.read()
         
         if success:
-            # Save frame as jpg file
+            # Save frame for further processing
             img_fname = f"frame_{idx}"
             img_fpath = os.path.join(output_dir, 'frames', img_fname + '.jpg')
             cv2.imwrite(img_fpath, frame)
 
+            # Convert image to base64 encoded string
+            b64_img_str = convert_img_to_base64(frame)
+
             # Create annotations for frame from transcripts
             annotations.append({
-                'image_id': idx,
-                'img_fname': img_fname,
+                'video_id': video_id,
+                'video_path' : video_path,
+                'b64_img_str': b64_img_str,
                 'caption': text,
                 'time': mid_time_ms,
                 'frame_no': frame_no,
-                'video_path' : video_path,
-                'sub_video_id' : idx,
             })
-        
-    # Save transcript annotations as json file
+    
+    # Save transcript annotations as json file for further processing
     with open(os.path.join(output_dir, 'annotations.json'), 'w') as f:
         json.dump(annotations, f)
     
     vidcap.release()
-
-
-def convert_img_to_base64(image_path: str):
-    "Convert image to base 64 string"
-    with open(image_path, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read())
-    return encoded_string.decode()
 
 
 def use_lvm(endpoint: str, img_b64_string: str, prompt: str ="Provide a short description for this scene."):
@@ -396,8 +405,9 @@ def use_lvm(endpoint: str, img_b64_string: str, prompt: str ="Provide a short de
     return response.json()["text"]
 
 
-def extract_frames_and_generate_captions(video_path: str, lvm_endpoint: str, output_dir: str, key_frame_per_second: int = 1):
+def extract_frames_and_generate_captions(video_id: str, video_path: str, lvm_endpoint: str, output_dir: str, key_frame_per_second: int = 1):
     """Extract frames (.jpg) and annotations (.json) from video file (.mp4) by generating captions using LVM microservice"""
+    # Set up location to store frames and annotations
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(os.path.join(output_dir, 'frames'), exist_ok=True)
 
@@ -421,34 +431,36 @@ def extract_frames_and_generate_captions(video_path: str, lvm_endpoint: str, out
             mid_time = vidcap.get(cv2.CAP_PROP_POS_MSEC)
             mid_time_ms = mid_time * 1000
 
-            # Save frame
             frame_no = curr_frame
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            img_fname = f'frame_{idx}'
+
+            # Save frame for further processing
+            img_fname = f"frame_{idx}"
             img_fpath = os.path.join(output_dir, 'frames', img_fname + '.jpg')
             cv2.imwrite(img_fpath, frame)
 
+            # Convert image to base64 encoded string
+            b64_img_str = convert_img_to_base64(frame)
+
             # Caption generation using LVM microservice
-            img_b64_str = convert_img_to_base64(img_fpath)
-            caption = use_lvm(lvm_endpoint, img_b64_str)
+            caption = use_lvm(lvm_endpoint, b64_img_str)
             caption = caption.strip()
             text = caption.replace('\n', ' ')
 
 
             # Create annotations for frame from transcripts
             annotations.append({
-                'image_id': idx,
-                'img_fname': img_fname,
+                'video_id': video_id,
+                'video_path' : video_path,
+                'b64_img_str': b64_img_str,
                 'caption': text,
                 'time': mid_time_ms,
                 'frame_no': frame_no,
-                'video_path' : video_path,
-                'sub_video_id' : idx,
             })
         
         curr_frame += 1
-        
-    # Save transcript annotations as json file
+
+    # Save caption annotations as json file for further processing
     with open(os.path.join(output_dir, 'annotations.json'), 'w') as f:
         json.dump(annotations, f)
     

@@ -22,6 +22,7 @@ from comps.dataprep.multimodal_utils import (
     create_upload_folder,
     load_json_file,
     clear_upload_folder,
+    generate_video_id,
     convert_video_to_audio,
     load_whisper_model,
     extract_transcript_from_audio,
@@ -264,8 +265,6 @@ async def ingest_videos(
     files:  List[UploadFile] = File(None)
 ):
     """Upload videos with speech, generate transcripts using whisper and ingest into redis"""
-    
-    print(f"files:{files}")
 
     if files:
         video_files = []
@@ -285,15 +284,22 @@ async def ingest_videos(
         embeddings = BridgeTowerEmbeddings(model_name=EMBED_MODEL, device=device)
 
         for video_file in video_files:
-            video_file_name = os.path.splitext(video_file.filename)[0]
+            print(f"Processing video {video_file.filename}")
+
+            # Assign unique identifier to video
+            video_id = generate_video_id()
+
+            # Create video file name by appending identifier
+            video_file_name = f"{os.path.splitext(video_file.filename)[0]}_{video_id}.mp4"
+            video_dir_name = os.path.splitext(video_file_name)[0]
             
             # Save video file in upload_directory
-            with open(os.path.join(upload_folder, video_file.filename), 'wb') as f:
+            with open(os.path.join(upload_folder, video_file_name), 'wb') as f:
                 shutil.copyfileobj(video_file.file, f)
 
             # Convert mp4 to temporary wav file
-            audio_file = video_file_name + ".wav"
-            convert_video_to_audio(os.path.join(upload_folder, video_file.filename), os.path.join(upload_folder, audio_file))
+            audio_file = video_dir_name + ".wav"
+            convert_video_to_audio(os.path.join(upload_folder, video_file_name), os.path.join(upload_folder, audio_file))
                 
             # Extract transcript from audio
             transcripts = extract_transcript_from_audio(whisper_model, os.path.join(upload_folder, audio_file))
@@ -304,16 +310,18 @@ async def ingest_videos(
             delete_audio_file(os.path.join(upload_folder, audio_file))
 
             # Store frames and caption annotations in a new directory
-            extract_frames_and_annotations_from_transcripts(os.path.join(upload_folder, video_file.filename), os.path.join(upload_folder, vtt_file), os.path.join(upload_folder, video_file_name))
-
-            print(f"Stored frames and annotations in {os.path.join(upload_folder, video_file_name)}")
+            extract_frames_and_annotations_from_transcripts(video_id, os.path.join(upload_folder, video_file_name), os.path.join(upload_folder, vtt_file), os.path.join(upload_folder, video_dir_name))
         
-            # Delete temporary video and captions files
-            os.remove(os.path.join(upload_folder, video_file.filename))
+            # Delete temporary vtt file
             os.remove(os.path.join(upload_folder, vtt_file))
         
             # Ingest multimodal data into redis
-            ingest_multimodal(video_file_name, video_file_name, video_file_name, os.path.join(upload_folder, video_file_name), embeddings)
+            ingest_multimodal(video_file_name, video_dir_name, video_dir_name, os.path.join(upload_folder, video_dir_name), embeddings)
+
+            # Delete temporary video directory containing frames and annotations
+            shutil.rmtree(os.path.join(upload_folder, video_dir_name))
+
+            print(f"Processed video {video_file.filename}")
         
         return {"status": 200, "message": "Data preparation succeeded"}
 
@@ -326,8 +334,6 @@ async def ingest_videos(
     files:  List[UploadFile] = File(None)
 ):
     """Upload videos without speech (only background music or no audio), generate captions using lvm microservice and ingest into redis"""
-    
-    print(f"files:{files}")
 
     if files:
         video_files = []
@@ -344,23 +350,29 @@ async def ingest_videos(
         embeddings = BridgeTowerEmbeddings(model_name=EMBED_MODEL, device=device)
 
         for video_file in video_files:
-            video_file_name = os.path.splitext(video_file.filename)[0]
+            print(f"Processing video {video_file.filename}")
+
+            # Assign unique identifier to video
+            video_id = generate_video_id()
+
+            # Create video file name by appending identifier
+            video_file_name = f"{os.path.splitext(video_file.filename)[0]}_{video_id}.mp4"
+            video_dir_name = os.path.splitext(video_file_name)[0]
             
             # Save video file in upload_directory
-            with open(os.path.join(upload_folder, video_file.filename), 'wb') as f:
+            with open(os.path.join(upload_folder, video_file_name), 'wb') as f:
                 shutil.copyfileobj(video_file.file, f)
 
-
             # Store frames and caption annotations in a new directory
-            extract_frames_and_generate_captions(os.path.join(upload_folder, video_file.filename), LVM_ENDPOINT, os.path.join(upload_folder, video_file_name))
-
-            print(f"Stored frames and annotations in {os.path.join(upload_folder, video_file_name)}")
-        
-            # Delete temporary video and captions files
-            os.remove(os.path.join(upload_folder, video_file.filename))
+            extract_frames_and_generate_captions(video_id, os.path.join(upload_folder, video_file_name), LVM_ENDPOINT, os.path.join(upload_folder, video_dir_name))
         
             # Ingest multimodal data into redis
-            ingest_multimodal(video_file_name, video_file_name, video_file_name, os.path.join(upload_folder, video_file_name), embeddings)
+            ingest_multimodal(video_file_name, video_dir_name, video_dir_name, os.path.join(upload_folder, video_dir_name), embeddings)
+
+            # Delete temporary video directory containing frames and annotations
+            shutil.rmtree(os.path.join(upload_folder, video_dir_name))
+
+            print(f"Processed video {video_file.filename}")
         
         return {"status": 200, "message": "Data preparation succeeded"}
 
@@ -373,8 +385,7 @@ async def ingest_videos(
 async def ingest_videos(
     files:  List[UploadFile] = File(None)
 ):
-    print(f"files:{files}")
-
+    
     if files:
         video_files, video_file_names = [], []
         captions_files, captions_file_names = [], []
@@ -401,33 +412,43 @@ async def ingest_videos(
         embeddings = BridgeTowerEmbeddings(model_name=EMBED_MODEL, device=device)
 
         for video_file in video_files:
-            video_file_name = os.path.splitext(video_file.filename)[0]
+            print(f"Processing video {video_file.filename}")
+
+            # Assign unique identifier to video
+            video_id = generate_video_id()
+
+            # Create video file name by appending identifier
+            video_file_name = f"{os.path.splitext(video_file.filename)[0]}_{video_id}.mp4"
+            video_dir_name = os.path.splitext(video_file_name)[0]
             
             # Save video file in upload_directory
-            with open(os.path.join(upload_folder, video_file.filename), 'wb') as f:
+            with open(os.path.join(upload_folder, video_file_name), 'wb') as f:
                 shutil.copyfileobj(video_file.file, f)
 
             # Save captions file in upload directory
-            vtt_file = video_file_name + ".vtt"
+            vtt_file_name = os.path.splitext(video_file.filename)[0] + ".vtt"
             vtt_idx = None
             for idx, caption_file in enumerate(captions_files):
-                if caption_file.filename == vtt_file:
+                if caption_file.filename == vtt_file_name:
                     vtt_idx = idx
                     break
+            vtt_file = video_dir_name + ".vtt"
             with open(os.path.join(upload_folder, vtt_file), 'wb') as f:
                 shutil.copyfileobj(captions_files[vtt_idx].file, f)    
 
             # Store frames and caption annotations in a new directory
-            extract_frames_and_annotations_from_transcripts(os.path.join(upload_folder, video_file.filename), os.path.join(upload_folder, vtt_file), os.path.join(upload_folder, video_file_name))
+            extract_frames_and_annotations_from_transcripts(video_id, os.path.join(upload_folder, video_file_name), os.path.join(upload_folder, vtt_file), os.path.join(upload_folder, video_dir_name))
 
-            print(f"Stored frames and annotations in {os.path.join(upload_folder, video_file_name)}")
-        
-            # Delete temporary video and captions files
-            os.remove(os.path.join(upload_folder, video_file.filename))
+            # Delete temporary vtt file
             os.remove(os.path.join(upload_folder, vtt_file))
         
             # Ingest multimodal data into redis
-            ingest_multimodal(video_file_name, video_file_name, video_file_name, os.path.join(upload_folder, video_file_name), embeddings)
+            ingest_multimodal(video_file_name, video_dir_name, video_dir_name, os.path.join(upload_folder, video_dir_name), embeddings)
+
+            # Delete temporary video directory containing frames and annotations
+            shutil.rmtree(os.path.join(upload_folder, video_dir_name))
+
+            print(f"Processed video {video_file.filename}")
         
         return {"status": 200, "message": "Data preparation succeeded"}
 
