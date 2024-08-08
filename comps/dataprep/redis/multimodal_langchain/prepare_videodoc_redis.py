@@ -208,19 +208,26 @@ def prepare_data_and_metadata_from_annotation(annotation, path_to_frames, title,
         ub_inference = min(len(annotation), i+num_transcript_concat_for_inference+1) 
         caption_for_inference = ' '.join([annotation[j]['caption'] for j in range(lb_inference, ub_inference)])
         
+        video_id = frame['video_id']
+        b64_img_str = frame['b64_img_str']
         time_of_frame = frame['time']
         embedding_type = 'pair'
+        source_video = frame['video_name']
+
         text_list.append(caption_for_ingesting)
         image_list.append(path_to_frame)
         metadatas.append({
             'content' : caption_for_ingesting,
-            'source' : path_to_frame,
+            'b64_img_str': b64_img_str,
+            'video_id': video_id,
+            'source_video' : source_video,
             'time_of_frame_ms' : float(time_of_frame),
             'embedding_type' : embedding_type,
             'title' : title,
             'description' : description,
             'transcript_for_inference' : caption_for_inference,
         })
+    
     return text_list, image_list, metadatas
 
 
