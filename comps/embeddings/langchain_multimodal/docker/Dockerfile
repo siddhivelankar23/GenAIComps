@@ -2,7 +2,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-FROM langchain/langchain:latest
+FROM vault.habana.ai/gaudi-docker/1.16.1/ubuntu22.04/habanalabs/pytorch-installer-2.2.2:latest
 
 RUN apt-get update -y && apt-get install -y --no-install-recommends --fix-missing \
     libgl1-mesa-glx \
@@ -18,12 +18,10 @@ USER user
 COPY comps /home/user/comps
 
 RUN pip install --no-cache-dir --upgrade pip && \
-    if [ ${ARCH} = "cpu" ]; then pip install torch --index-url https://download.pytorch.org/whl/cpu; fi && \
-    pip install --no-cache-dir -r /home/user/comps/embeddings/langchain/requirements.txt
+    pip install --no-cache-dir -r /home/user/comps/embeddings/langchain_multimodal/requirements.txt
 
 ENV PYTHONPATH=$PYTHONPATH:/home/user
 
-WORKDIR /home/user/comps/embeddings/langchain
+WORKDIR /home/user/comps/embeddings/langchain_multimodal
 
 ENTRYPOINT ["python", "mm_embedding.py"]
-

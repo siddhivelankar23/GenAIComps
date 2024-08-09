@@ -4,12 +4,10 @@
 import os
 import time
 
+from MMEmbeddings import BridgeTowerEmbeddings
+
 from typing import Union
-
-
-from embeddings.BridgeTowerEmbeddings import BridgeTowerEmbeddings, MMEmbeddings
 from langsmith import traceable
-
 from comps import (
     EmbedDoc1024,
     ServiceType,
@@ -17,6 +15,7 @@ from comps import (
     ImageDoc,
     TextImageDoc,
     opea_microservices,
+    opea_telemetry,
     register_microservice,
     register_statistics,
     statistics_dict,
@@ -25,19 +24,17 @@ from comps import (
 MMDoc = Union[TextDoc, ImageDoc, TextImageDoc]
 
 @register_microservice(
-    name="opea_service@embedding_multimodal",
+    name="opea_service@multimodal_embedding",
     service_type=ServiceType.EMBEDDING,
     endpoint="/v1/embeddings",
     host="0.0.0.0",
     port=6000,
-    input_datatype=MMDoc,  
+    input_datatype=MMDoc,
     output_datatype=EmbedDoc1024,
 )
+@opea_telemetry
 @traceable(run_type="embedding")
-@register_statistics(names=["opea_service@embedding_multimodal"])
-
-
-
+@register_statistics(names=["opea_service@multimodal_embedding"])
 
 def embedding(input: MMDoc) -> EmbedDoc1024:
     start = time.time()
@@ -46,10 +43,13 @@ def embedding(input: MMDoc) -> EmbedDoc1024:
         # Handle text input
         embed_vector = BridgeTowerEmbeddings.embed_query(input.text)
         res = EmbedDoc1024(text=input.text, embedding=embed_vector)
-    elif isinstance(input, ImageDoc):
+    
+    # function embed_image to be added 
+    #elif isinstance(input, ImageDoc):
         # Handle image input
-        embed_vector = BridgeTowerEmbeddings.embed_image(input.image_path)  
-        res = EmbedDoc1024(text=input.image_path, embedding=embed_vector)
+    #    embed_vector = BridgeTowerEmbeddings.embed_image(input.image_path)  
+    #    res = EmbedDoc1024(text=input.image_path, embedding=embed_vector) 
+    
     elif isinstance(input, TextImageDoc):
         # Handle text + image input
         embed_vector = BridgeTowerEmbeddings.embed_image_text_pairs(input.doc)  
@@ -63,7 +63,5 @@ def embedding(input: MMDoc) -> EmbedDoc1024:
 
 
 if __name__ == "__main__":
-    mm_embedding_endpoint = os.getenv("MM_EMBEDDING_ENDPOINT", "http://localhost:8080")
-    embeddings = MMEmbeddings(model=mm_embedding_endpoint)
-    print("MM Gaudi Embedding initialized.")
-    opea_microservices["opea_service@embedding_multimodal"].start()
+    embeddings = BridgeTowerEmbeddings(model_name="BridgeTower/bridgetower-large-itm-mlm-itc")
+    opea_microservices["opea_service@multimodal_embedding"].start()
