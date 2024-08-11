@@ -1,0 +1,15 @@
+text:
+- name: content
+- name: source
+- name: embedding_type
+- name: title
+- name: description
+- name: transcript_for_inference
+numeric:
+- name: time_of_frame_ms
+vector:
+- name: content_vector
+  algorithm: HNSW
+  datatype: FLOAT32
+  dims: 512
+  distance_metric: COSINE
