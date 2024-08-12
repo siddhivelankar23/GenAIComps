@@ -76,7 +76,7 @@ INDEX_NAME = os.getenv("INDEX_NAME", "demo-exp-fn")
 
 current_file_path = os.path.abspath(__file__)
 parent_dir = os.path.dirname(current_file_path)
-REDIS_SCHEMA = os.getenv("REDIS_SCHEMA", "schema.yml")
+REDIS_SCHEMA = os.getenv("REDIS_SCHEMA", "redis_schema.yml")
 schema_path = os.path.join(parent_dir, REDIS_SCHEMA)
 INDEX_SCHEMA = schema_path
 TGI_ENDPOINT = os.getenv("TGI_ENDPOINT", "http://localhost:8080")
