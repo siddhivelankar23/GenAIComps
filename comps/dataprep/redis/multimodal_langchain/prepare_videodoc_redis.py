@@ -266,7 +266,7 @@ def drop_index(index_name, redis_url=REDIS_URL):
     return True
 
 
-@register_microservice(name="opea_service@prepare_videodoc_redis_generate_transcripts", endpoint="/v1/dataprep/generate_transcripts", host="0.0.0.0", port=6005)
+@register_microservice(name="opea_service@prepare_videodoc_redis", endpoint="/v1/dataprep/generate_transcripts", host="0.0.0.0", port=6007)
 @traceable(run_type="tool")
 async def ingest_videos(
     files:  List[UploadFile] = File(None)
@@ -333,7 +333,7 @@ async def ingest_videos(
     raise HTTPException(status_code=400, detail="Must provide atleast one video (.mp4) file.")
 
 
-@register_microservice(name="opea_service@prepare_videodoc_redis_generate_captions", endpoint="/v1/dataprep/generate_captions", host="0.0.0.0", port=6006)
+@register_microservice(name="opea_service@prepare_videodoc_redis", endpoint="/v1/dataprep/generate_captions", host="0.0.0.0", port=6007)
 @traceable(run_type="tool")
 async def ingest_videos(
     files:  List[UploadFile] = File(None)
@@ -383,7 +383,7 @@ async def ingest_videos(
 
 
 
-@register_microservice(name="opea_service@prepare_videodoc_redis_videos_with_transcripts", endpoint="/v1/dataprep/videos_with_transcripts", host="0.0.0.0", port=6007)
+@register_microservice(name="opea_service@prepare_videodoc_redis", endpoint="/v1/dataprep/videos_with_transcripts", host="0.0.0.0", port=6007)
 @traceable(run_type="tool")
 async def ingest_videos(
     files:  List[UploadFile] = File(None)
@@ -460,7 +460,7 @@ async def ingest_videos(
 
 
 @register_microservice(
-    name="opea_service@prepare_videodoc_redis_get_videos", endpoint="/v1/dataprep/get_videos", host="0.0.0.0", port=6008
+    name="opea_service@prepare_videodoc_redis", endpoint="/v1/dataprep/get_videos", host="0.0.0.0", port=6007
 )
 @traceable(run_type="tool")
 async def rag_get_file_structure():
@@ -475,7 +475,7 @@ async def rag_get_file_structure():
 
 
 @register_microservice(
-    name="opea_service@prepare_videodoc_redis_delete_videos", endpoint="/v1/dataprep/delete_videos", host="0.0.0.0", port=6009
+    name="opea_service@prepare_videodoc_redis", endpoint="/v1/dataprep/delete_videos", host="0.0.0.0", port=6007
 )
 @traceable(run_type="tool")
 async def delete_videos():
@@ -492,8 +492,4 @@ async def delete_videos():
 
 if __name__ == "__main__":
     create_upload_folder(upload_folder)
-    opea_microservices["opea_service@prepare_videodoc_redis_generate_transcripts"].start()
-    opea_microservices["opea_service@prepare_videodoc_redis_generate_captions"].start()
-    opea_microservices["opea_service@prepare_videodoc_redis_videos_with_transcripts"].start()
-    opea_microservices["opea_service@prepare_videodoc_redis_get_videos"].start()
-    opea_microservices["opea_service@prepare_videodoc_redis_delete_videos"].start()
+    opea_microservices["opea_service@prepare_videodoc_redis"].start()
