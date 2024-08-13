@@ -4,6 +4,8 @@ For dataprep microservice, we provide two frameworks: `Langchain` and `LlamaInde
 
 We organized these two folders in the same way, so you can use either framework for dataprep microservice with the following constructions.
 
+Instructions for multimodal data preparation can be found in the `multimodal_langchain` directory.
+
 # 🚀1. Start Microservice with Python（Option 1）
 
 ## 1.1 Install Requirements
