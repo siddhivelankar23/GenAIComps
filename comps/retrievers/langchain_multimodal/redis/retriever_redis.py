@@ -5,7 +5,7 @@ import os
 import time
 from typing import Union
 
-from comps.embeddings.langchain_multimodal.MMEmbeddings import BridgeTowerEmbeddings
+from MMEmbeddings import BridgeTowerEmbeddings
 from langchain_community.vectorstores import Redis
 from langsmith import traceable
 from multimodal_config import INDEX_NAME, REDIS_URL
@@ -26,9 +26,6 @@ from comps.cores.proto.api_protocol import (
     RetrievalResponse,
     RetrievalResponseData,
 )
-
-tei_embedding_endpoint = os.getenv("TEI_EMBEDDING_ENDPOINT")
-
 
 @register_microservice(
     name="opea_service@retriever_multimodal_redis",
