@@ -5,7 +5,7 @@ import os
 import time
 from typing import Union
 
-from MMEmbeddings import BridgeTowerEmbeddings
+from comps.embeddings.langchain_multimodal.MMEmbeddings import BridgeTowerEmbeddings
 from langchain_community.vectorstores import Redis
 from langsmith import traceable
 from multimodal_config import INDEX_NAME, REDIS_URL
