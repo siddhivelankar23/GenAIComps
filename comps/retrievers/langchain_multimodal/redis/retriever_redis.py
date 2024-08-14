@@ -28,14 +28,14 @@ from comps.cores.proto.api_protocol import (
 )
 
 @register_microservice(
-    name="opea_service@retriever_multimodal_redis",
+    name="opea_service@retriever_redis",
     service_type=ServiceType.RETRIEVER,
     endpoint="/v1/retrieval",
     host="0.0.0.0",
     port=7000,
 )
 @traceable(run_type="retriever")
-@register_statistics(names=["opea_service@retriever_multimodal_redis"])
+@register_statistics(names=["opea_service@retriever_redis"])
 def retrieve(
     input: Union[EmbedDoc1024, RetrievalRequest, ChatCompletionRequest]
 ) -> Union[SearchedMultimodalDoc, RetrievalResponse, ChatCompletionRequest]:
