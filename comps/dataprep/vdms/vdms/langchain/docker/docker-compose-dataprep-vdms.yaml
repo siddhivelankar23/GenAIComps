@@ -12,7 +12,7 @@ services:
     image: opea/dataprep-vdms:latest
     container_name: dataprep-vdms-server
     ports:
-      - "6000:6000"
+      - "6007:6007"
     ipc: host
     environment:
       no_proxy: ${no_proxy}
