@@ -25,17 +25,17 @@ COPY comps /home/user/comps
 
 RUN pip install --no-cache-dir --upgrade pip setuptools && \
     if [ ${ARCH} = "cpu" ]; then pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu; fi && \
-    pip install --no-cache-dir -r /home/user/comps/dataprep/vdms/langchain/requirements.txt
+    pip install --no-cache-dir -r /home/user/comps/dataprep/vdms/vdms/langchain/requirements.txt
 
 ENV PYTHONPATH=/home/user
 
 USER root
 
-RUN mkdir -p /home/user/comps/dataprep/vdms/langchain/uploaded_files && chown -R user /home/user/comps/dataprep/vdms/langchain/uploaded_files
+RUN mkdir -p /home/user/comps/dataprep/vdms/vdms/langchain/uploaded_files && chown -R user /home/user/comps/dataprep/vdms/vdms/langchain/uploaded_files
 
 USER user
 
-WORKDIR /home/user/comps/dataprep/vdms/langchain
+WORKDIR /home/user/comps/dataprep/vdms/vdms/langchain
 
-ENTRYPOINT ["python", "prepare_doc_vdms.py"]
+ENTRYPOINT ["python", "ingest_videos.py"]
 
