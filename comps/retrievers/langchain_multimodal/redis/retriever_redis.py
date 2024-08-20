@@ -5,13 +5,13 @@ import os
 import time
 from typing import Union
 
-from comps.embeddings.langchain_multimodal.MMEmbeddings import BridgeTowerEmbeddings
+from comps.embeddings.multimodal_embeddings.bridgetower.bridgetower_embedding import BridgeTowerEmbeddings
 from langchain_community.vectorstores import Redis
 from langsmith import traceable
 from multimodal_config import INDEX_NAME, REDIS_URL
 
 from comps import (
-    EmbedDoc1024,
+    EmbedMultimodalDoc,
     SearchedMultimodalDoc,
     ServiceType,
     TextDoc,
@@ -37,7 +37,7 @@ from comps.cores.proto.api_protocol import (
 @traceable(run_type="retriever")
 @register_statistics(names=["opea_service@retriever_redis"])
 def retrieve(
-    input: Union[EmbedDoc1024, RetrievalRequest, ChatCompletionRequest]
+    input: Union[EmbedMultimodalDoc, RetrievalRequest, ChatCompletionRequest]
 ) -> Union[SearchedMultimodalDoc, RetrievalResponse, ChatCompletionRequest]:
 
     start = time.time()
@@ -45,7 +45,7 @@ def retrieve(
     if vector_db.client.keys() == []:
         search_res = []
     else:
-        if isinstance(input, EmbedDoc1024):
+        if isinstance(input, EmbedMultimodalDoc):
             query = input.text
         else:
             # for RetrievalRequest, ChatCompletionRequest
@@ -73,7 +73,7 @@ def retrieve(
 
     # return different response format
     retrieved_docs = []
-    if isinstance(input, EmbedDoc1024):
+    if isinstance(input, EmbedMultimodalDoc):
         for r in search_res:
             retrieved_docs.append(TextDoc(text=r.page_content))
         result = SearchedMultimodalDoc(retrieved_docs=retrieved_docs, initial_query=input.text)
