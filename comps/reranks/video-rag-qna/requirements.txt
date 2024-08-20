@@ -1,0 +1,12 @@
+datasets
+docarray
+fastapi
+langsmith
+opentelemetry-api
+opentelemetry-exporter-otlp
+opentelemetry-sdk
+Pillow
+prometheus-fastapi-instrumentator
+pydub
+shortuuid
+uvicorn
