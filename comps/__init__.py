@@ -45,7 +45,8 @@ from comps.cores.mega.gateway import (
     FaqGenGateway,
     VisualQnAGateway,
 )
-
+# Embeddings
+from comps.embeddings.multimodal_embeddings.bridgetower import BridgeTowerEmbedding
 # Telemetry
 from comps.cores.telemetry.opea_telemetry import opea_telemetry
 

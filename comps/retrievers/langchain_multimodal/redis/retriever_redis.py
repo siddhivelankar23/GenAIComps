@@ -5,7 +5,7 @@ import os
 import time
 from typing import Union
 
-from comps.embeddings.multimodal_embeddings.bridgetower.bridgetower_embedding import BridgeTowerEmbeddings
+from comps import BridgeTowerEmbedding
 from langchain_community.vectorstores import Redis
 from langsmith import traceable
 from multimodal_config import INDEX_NAME, REDIS_URL
@@ -93,6 +93,6 @@ def retrieve(
 
 if __name__ == "__main__":
 
-    embeddings = BridgeTowerEmbeddings()
+    embeddings = BridgeTowerEmbedding()
     vector_db = Redis(embedding=embeddings, index_name=INDEX_NAME, redis_url=REDIS_URL)
     opea_microservices["opea_service@retriever_redis"].start()

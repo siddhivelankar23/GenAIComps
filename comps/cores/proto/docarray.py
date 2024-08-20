@@ -95,7 +95,7 @@ class SearchedDoc(BaseDoc):
 
 
 class SearchedMultimodalDoc(BaseDoc):
-    retrieved_docs: DocList[TextImageDoc]
+    retrieved_docs: DocList[TextDoc]
     initial_query: str
     top_n: int = 1
     #metadata: DocList[dict]
