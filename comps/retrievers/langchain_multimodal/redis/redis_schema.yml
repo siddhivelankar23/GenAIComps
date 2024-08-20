@@ -1,6 +1,11 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 text:
 - name: content
-- name: source
+- name: b64_img_str
+- name: video_id
+- name: source_video
 - name: embedding_type
 - name: title
 - name: description
