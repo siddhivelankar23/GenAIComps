@@ -6,7 +6,6 @@ from typing import Dict, List, Optional, Union, Tuple
 
 import numpy as np
 from docarray import BaseDoc, DocList
-from docarray.documents import AudioDoc
 from docarray.typing import AudioUrl, ImageUrl
 from docarray.documents import AudioDoc, VideoDoc
 from docarray.typing import AudioUrl
