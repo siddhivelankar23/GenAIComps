@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-from typing import Dict, List, Optional, Union, Tuple
+from typing import Dict, List, Optional, Union, Tuple, Any
 
 import numpy as np
 from docarray import BaseDoc, DocList
@@ -98,7 +98,7 @@ class SearchedMultimodalDoc(BaseDoc):
     retrieved_docs: DocList[TextDoc]
     initial_query: str
     top_n: int = 1
-    #metadata: DocList[dict]
+    metadata: Any = None
 
     class Config:
         json_encoders = {np.ndarray: lambda x: x.tolist()}
