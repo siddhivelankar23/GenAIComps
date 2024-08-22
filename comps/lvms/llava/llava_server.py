@@ -15,6 +15,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from transformers import pipeline
 
+from template import ChatTemplate
+
 model_name_or_path = None
 model_dtype = None
 use_hpu_graphs = True
@@ -51,11 +53,15 @@ async def generate(request: Request) -> Response:  # FIXME batch_size=1 for now,
     print("LLaVA generation begin.")
     request_dict = await request.json()
     prompt = request_dict.pop("prompt")
+    context = request_dict.pop("context", None)
     img_b64_str = request_dict.pop("img_b64_str")
     max_new_tokens = request_dict.pop("max_new_tokens", 100)
 
-    # format the prompt
-    prompt = f"<image>\nUSER: {prompt}\nASSISTANT:"
+    # Choose appropriate prompt if context is provided
+    if context:
+        prompt = ChatTemplate.generate_rag_prompt(context, prompt)
+    else:
+        prompt = ChatTemplate.generate_simple_prompt(prompt)
 
     # Decode and Resize the image
     image = PIL.Image.open(BytesIO(base64.b64decode(img_b64_str)))
