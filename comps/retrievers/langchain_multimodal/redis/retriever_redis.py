@@ -8,7 +8,7 @@ from typing import Union
 from comps import BridgeTowerEmbedding
 from langchain_community.vectorstores import Redis
 from langsmith import traceable
-from multimodal_config import INDEX_NAME, REDIS_URL
+from multimodal_config import INDEX_NAME, REDIS_URL, REDIS_SCHEMA
 
 from comps import (
     EmbedMultimodalDoc,
@@ -75,8 +75,9 @@ def retrieve(
     retrieved_docs = []
     if isinstance(input, EmbedMultimodalDoc):
         for r in search_res:
+            metadata = r.metadata
             retrieved_docs.append(TextDoc(text=r.page_content))
-        result = SearchedMultimodalDoc(retrieved_docs=retrieved_docs, initial_query=input.text)
+        result = SearchedMultimodalDoc(retrieved_docs=retrieved_docs, initial_query=input.text, metadata=metadata)
     else:
         for r in search_res:
             retrieved_docs.append(RetrievalResponseData(text=r.page_content, metadata=r.metadata))
@@ -94,5 +95,5 @@ def retrieve(
 if __name__ == "__main__":
 
     embeddings = BridgeTowerEmbedding()
-    vector_db = Redis(embedding=embeddings, index_name=INDEX_NAME, redis_url=REDIS_URL)
+    vector_db = Redis.from_existing_index(embedding=embeddings, schema=REDIS_SCHEMA, index_name=INDEX_NAME, redis_url=REDIS_URL)
     opea_microservices["opea_service@retriever_redis"].start()
