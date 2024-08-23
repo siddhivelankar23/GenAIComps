@@ -7,10 +7,12 @@ import os
 import time
 
 import requests
+from typing import Union
 
 from comps import (
     CustomLogger,
     LVMDoc,
+    SearchedMultimodalDoc,
     ServiceType,
     TextDoc,
     opea_microservices,
@@ -29,19 +31,29 @@ logflag = os.getenv("LOGFLAG", False)
     endpoint="/v1/lvm",
     host="0.0.0.0",
     port=9399,
-    input_datatype=LVMDoc,
     output_datatype=TextDoc,
 )
 @register_statistics(names=["opea_service@lvm"])
-async def lvm(request: LVMDoc):
+async def lvm(request: Union[LVMDoc, SearchedMultimodalDoc]):
     if logflag:
         logger.info(request)
     start = time.time()
-    img_b64_str = request.image
-    prompt = request.prompt
-    max_new_tokens = request.max_new_tokens
 
-    inputs = {"img_b64_str": img_b64_str, "prompt": prompt, "max_new_tokens": max_new_tokens}
+    if isinstance(request, SearchedMultimodalDoc):
+        retrieved_metadata = request.metadata[0]
+
+        img_b64_str = retrieved_metadata["b64_img_str"]
+        prompt = request.initial_query
+        context = retrieved_metadata["transcript_for_inference"]
+        max_new_tokens = 512
+
+        inputs = {"img_b64_str": img_b64_str, "prompt": prompt, "context": context, "max_new_tokens": max_new_tokens}
+    else:
+        img_b64_str = request.image
+        prompt = request.prompt
+        max_new_tokens = request.max_new_tokens
+
+        inputs = {"img_b64_str": img_b64_str, "prompt": prompt, "max_new_tokens": max_new_tokens}
 
     # forward to the LLaVA server
     response = requests.post(url=f"{lvm_endpoint}/generate", data=json.dumps(inputs), proxies={"http": None})
