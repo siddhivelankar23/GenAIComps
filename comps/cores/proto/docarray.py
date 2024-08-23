@@ -1,12 +1,13 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict, List, Optional, Union
+
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from docarray import BaseDoc, DocList
-from docarray.documents import AudioDoc
-from docarray.typing import AudioUrl
+from docarray.documents import AudioDoc, VideoDoc
+from docarray.typing import AudioUrl, ImageUrl
 from pydantic import Field, conint, conlist, field_validator
 
 
@@ -17,7 +18,30 @@ class TopologyInfo:
 
 
 class TextDoc(BaseDoc, TopologyInfo):
-    text: str
+    text: str = None
+
+
+class ImageDoc(BaseDoc):
+    url: Optional[ImageUrl] = Field(
+        description="The path to the image. It can be remote (Web) URL, or a local file path",
+        default=None,
+    )
+    base64_image: Optional[str] = Field(
+        description="The base64-based encoding of the image",
+        default=None,
+    )
+
+
+class TextImageDoc(BaseDoc):
+    image: ImageDoc = None
+    text: TextDoc = None
+
+
+MultimodalDoc = Union[
+    TextDoc,
+    ImageDoc,
+    TextImageDoc,
+]
 
 
 class Base64ByteStrDoc(BaseDoc):
@@ -41,6 +65,18 @@ class EmbedDoc(BaseDoc):
     fetch_k: int = 20
     lambda_mult: float = 0.5
     score_threshold: float = 0.2
+
+
+class EmbedMultimodalDoc(EmbedDoc):
+    # extend EmbedDoc with these attributes
+    url: Optional[ImageUrl] = Field(
+        description="The path to the image. It can be remote (Web) URL, or a local file path.",
+        default=None,
+    )
+    base64_image: Optional[str] = Field(
+        description="The base64-based encoding of the image.",
+        default=None,
+    )
 
 
 class Audio2TextDoc(AudioDoc):
@@ -170,3 +206,11 @@ class LVMDoc(BaseDoc):
     temperature: float = 0.01
     repetition_penalty: float = 1.03
     streaming: bool = False
+
+
+class LVMVideoDoc(BaseDoc):
+    video_url: str
+    chunk_start: float
+    chunk_duration: float
+    prompt: str
+    max_new_tokens: conint(ge=0, le=1024) = 512
