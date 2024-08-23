@@ -74,10 +74,11 @@ def retrieve(
     # return different response format
     retrieved_docs = []
     if isinstance(input, EmbedMultimodalDoc):
+        metadata_list = []
         for r in search_res:
-            metadata = r.metadata
+            metadata_list.append(r.metadata)
             retrieved_docs.append(TextDoc(text=r.page_content))
-        result = SearchedMultimodalDoc(retrieved_docs=retrieved_docs, initial_query=input.text, metadata=metadata)
+        result = SearchedMultimodalDoc(retrieved_docs=retrieved_docs, initial_query=input.text, metadata=metadata_list)
     else:
         for r in search_res:
             retrieved_docs.append(RetrievalResponseData(text=r.page_content, metadata=r.metadata))

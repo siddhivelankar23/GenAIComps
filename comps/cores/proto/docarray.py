@@ -70,6 +70,7 @@ class EmbedDoc(BaseDoc):
 
 class EmbedMultimodalDoc(EmbedDoc):
     # extend EmbedDoc with these attributes
+    search_type: str = "mmr"
     url: Optional[ImageUrl] = Field(
         description="The path to the image. It can be remote (Web) URL, or a local file path.",
         default=None,
@@ -108,7 +109,7 @@ class SearchedMultimodalDoc(BaseDoc):
     retrieved_docs: DocList[TextDoc]
     initial_query: str
     top_n: int = 1
-    metadata: Any = None
+    metadata: List[Dict[str, Any]]
 
     class Config:
         json_encoders = {np.ndarray: lambda x: x.tolist()}
