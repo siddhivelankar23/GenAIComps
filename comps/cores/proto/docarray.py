@@ -104,7 +104,6 @@ class SearchedDoc(BaseDoc):
         json_encoders = {np.ndarray: lambda x: x.tolist()}
 
 
-<<<<<<< HEAD
 class SearchedMultimodalDoc(BaseDoc):
     retrieved_docs: DocList[TextDoc]
     initial_query: str
@@ -114,8 +113,7 @@ class SearchedMultimodalDoc(BaseDoc):
     class Config:
         json_encoders = {np.ndarray: lambda x: x.tolist()}
         
-=======
->>>>>>> main
+
 class GeneratedDoc(BaseDoc):
     text: str
     prompt: str
