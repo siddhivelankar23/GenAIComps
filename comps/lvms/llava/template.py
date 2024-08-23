@@ -4,18 +4,11 @@
 class ChatTemplate:
     @staticmethod
     def generate_simple_prompt(prompt):
-        template = """
-<image>
-USER: {prompt}
-ASSISTANT:
-"""
-        return template.format(prompt=prompt)
+        return f"<image>\nUSER: {prompt}\nASSISTANT:"
     
     @staticmethod
     def generate_rag_prompt(context, question):
-        template = """
-USER: <image>
+        template = """USER: <image>
 The transcript associated with the image is '{context}'. {question} 
-ASSISTANT: 
-"""
+ASSISTANT:"""
         return template.format(context=context, question=question)
