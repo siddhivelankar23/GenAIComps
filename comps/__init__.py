@@ -30,6 +30,7 @@ from comps.cores.mega.micro_service import MicroService, register_microservice, 
 from comps.cores.mega.gateway import (
     Gateway,
     ChatQnAGateway,
+    MultimodalQnAGateway,
     CodeGenGateway,
     CodeTransGateway,
     DocSumGateway,
