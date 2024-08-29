@@ -1,6 +1,6 @@
 # Retriever Microservice
 
-This retriever microservice is a highly efficient search service designed for handling and retrieving embedding vectors from text and images. It operates by receiving an embedding vector as input and conducting a similarity search against vectors stored in a VectorDB database. Users must specify the VectorDB's URL and the index name, and the service searches within that index to find documents with the highest similarity to the input vector.
+This retriever microservice is a highly efficient search service designed for handling and retrieving embedding vectors from multimodal data. It operates by receiving an embedding vector as input and conducting a similarity search against vectors stored in a VectorDB database. Users must specify the VectorDB's URL and the index name, and the service searches within that index to find documents with the highest similarity to the input vector.
 
 The service primarily utilizes similarity measures in vector space to rapidly retrieve contentually similar documents. The vector-based retrieval approach is particularly suited for handling large datasets, offering fast and accurate search results that significantly enhance the efficiency and quality of information retrieval.
 
@@ -15,10 +15,6 @@ To start the retriever microservice, you must first install the required python 
 ```bash
 pip install -r requirements.txt
 ```
-### 1.1 Install Requirements
-
-Upload a video or images using the dataprep microservice, instructions can be found  [here](https://github.com/opea-project/GenAIComps/tree/main/comps/dataprep/redis/multimodal_langchain/README.md).
-
 ### 1.2 Setup VectorDB Service
 
 You need to setup your own VectorDB service (Redis in this example), and ingest your knowledge documents into the vector database.
@@ -29,8 +25,11 @@ Remember to ingest data into it manually.
 ```bash
 docker run -d --name="redis-vector-db" -p 6379:6379 -p 8001:8001 redis/redis-stack:7.2.0-v9
 ```
+### 1.3 Ingest images or video
 
-### 1.5 Start Retriever Service
+Upload a video or images using the dataprep microservice, instructions can be found  [here](https://github.com/opea-project/GenAIComps/tree/main/comps/dataprep/redis/multimodal_langchain/README.md).
+
+### 1.4 Start Retriever Service
 
 ```bash
 python langchain_multimodal/retriever_redis.py
