@@ -33,6 +33,8 @@ USER root
 
 RUN mkdir -p /home/user/comps/dataprep/vdms/vdms/langchain/uploaded_files && chown -R user /home/user/comps/dataprep/vdms/vdms/langchain/uploaded_files
 
+RUN chown -R user /home/user/comps/dataprep/vdms/vdms/langchain/
+
 USER user
 
 WORKDIR /home/user/comps/dataprep/vdms/vdms/langchain
