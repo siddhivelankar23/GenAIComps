@@ -12,7 +12,7 @@ from utils import store_embeddings
 from utils.vclip import vCLIP
 
 
-VECTORDB_SERVICE_HOST_IP = os.getenv("VECTORDB_SERVICE_HOST_IP", "0.0.0.0")
+VECTORDB_SERVICE_HOST_IP = os.getenv("VECTORDB_SERVICE_HOST_IP", "172.25.116.82")
 
 def setup_vclip_model(config, device="cpu"):
     model = vCLIP(config)
@@ -72,7 +72,7 @@ def generate_embeddings(config, embedding_model, vs):
     input_datatype=DocPath,
     output_datatype=None,
 )
-@opea_telemetry
+
 def process_videos(doc_path: DocPath):
     """Ingest videos to VDMS."""
     path = doc_path.path

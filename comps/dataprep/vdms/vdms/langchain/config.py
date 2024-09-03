@@ -14,7 +14,7 @@ def getEnv(key, default_value=None):
 EMBED_MODEL = getEnv("EMBED_MODEL", "BAAI/bge-base-en-v1.5")
 
 # VDMS configuration
-VDMS_HOST = getEnv("VDMS_HOST", "localhost")
+VDMS_HOST = getEnv("VDMS_HOST", "172.25.116.82")
 VDMS_PORT = int(getEnv("VDMS_PORT", 55555))
 COLLECTION_NAME = getEnv("COLLECTION_NAME", "rag-vdms")
 SEARCH_ENGINE = getEnv("SEARCH_ENGINE", "FaissFlat")
