@@ -38,7 +38,7 @@ opea_language_detector = OPEAMultilingualSupport()
 )
 @register_statistics(names=["opea_service@multilingual_support"])
 
-async def process(input: GeneratedDoc) -> LLMParamsDoc:
+async def multilingual(input: GeneratedDoc) -> LLMParamsDoc:
     """
     Process the input document using the OPEALanguageDetector.
 
@@ -68,6 +68,6 @@ async def process(input: GeneratedDoc) -> LLMParamsDoc:
 
 if __name__ == "__main__":
     # Start the microservice
-    tei_reranking_endpoint = os.getenv("MULTILINGUAL_SUPPORT_ENDPOINT", "http://localhost:8081")
+    multilingual_support_endpoint = os.getenv("MULTILINGUAL_SUPPORT_ENDPOINT", "http://localhost:8081")
     opea_microservices["opea_service@multilingual_support"].start()
     logger.info(f"Started OPEA Microservice: {"opea_service@multilingual_support"}")
