@@ -48,16 +48,16 @@ The Multilingual Support microservice exposes following API endpoints:
 - Execute multilingual support process by providing query 
 
   ```bash
-curl -X POST -H "Content-Type: application/json" -d @- http://localhost:8001/v1/multilingual_support <<JSON_DATA
-{
-  "text": "Hi. I am doing fine.",
-  "prompt": "### You are a helpful, respectful, and honest assistant to help the user with questions. \
-Please refer to the search results obtained from the local knowledge base. \
-But be careful to not incorporate information that you think is not relevant to the question. \
-If you don't know the answer to a question, please don't share false information. \
-### Search results:   \n
-### Question: 你好。你好吗？ \n
-### Answer:"
-}
-JSON_DATA
+  curl -X POST -H "Content-Type: application/json" -d @- http://localhost:8001/v1/multilingual_support <<JSON_DATA
+  {
+    "text": "Hi. I am doing fine.",
+    "prompt": "### You are a helpful, respectful, and honest assistant to help the user with questions. \
+    Please refer to the search results obtained from the local knowledge base. \
+    But be careful to not incorporate information that you think is not relevant to the question. \
+    If you don't know the answer to a question, please don't share false information. \
+    ### Search results:   \n
+    ### Question: 你好。你好吗？ \n
+    ### Answer:"
+  }
+  JSON_DATA
   ```
