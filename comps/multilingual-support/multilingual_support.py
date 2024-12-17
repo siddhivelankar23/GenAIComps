@@ -32,7 +32,7 @@ opea_language_detector = OPEAMultilingualSupport()
     service_type=ServiceType.MULTILINGUAL_SUPPORT,
     endpoint="/v1/multilingual_support",
     host='0.0.0.0',
-    port=int(os.getenv('LANGUAGE_DETECTION_USVC_PORT', default=8001)),
+    port=8001,
     input_datatype=GeneratedDoc,
     output_datatype=LLMParamsDoc,
 )
