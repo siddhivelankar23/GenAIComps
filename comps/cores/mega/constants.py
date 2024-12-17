@@ -33,6 +33,7 @@ class ServiceType(Enum):
     TEXT2IMAGE = 16
     ANIMATION = 17
     IMAGE2IMAGE = 18
+    MULTILINGUAL_SUPPORT = 19
 
 
 class MegaServiceEndpoint(Enum):
