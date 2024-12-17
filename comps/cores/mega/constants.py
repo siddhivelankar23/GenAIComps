@@ -63,7 +63,7 @@ class MegaServiceEndpoint(Enum):
     RAGAS = "/v1/ragas"
     GRAPHS = "/v1/graphs"
     AVATAR_CHATBOT = "/v1/avatarchatbot"
-
+    MULTILINGUAL_SUPPORT = "/v1/multilingual_support"
     # COMMON
     LIST_SERVICE = "/v1/list_service"
     LIST_PARAMETERS = "/v1/list_parameters"
