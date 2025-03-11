@@ -1,0 +1,6 @@
+services:
+  tgi-server:
+    runtime: runc
+##
+##  neo4j-apoc:
+##    runtime: runc

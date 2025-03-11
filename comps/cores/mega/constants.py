@@ -35,6 +35,8 @@ class ServiceType(Enum):
     IMAGE2IMAGE = 18
     TEXT2SQL = 19
     TEXT2GRAPH = 20
+    TEXT2KG = 21
+    TEXT2CSV = 22
 
 
 class MegaServiceEndpoint(Enum):
