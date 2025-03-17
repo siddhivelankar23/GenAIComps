@@ -1,0 +1,24 @@
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+docarray[full]
+fastapi
+pyprojroot
+hanging_threads
+opentelemetry-api
+opentelemetry-exporter-otlp
+opentelemetry-sdk
+pandas
+prometheus_fastapi_instrumentator
+psycopg2-binary 
+pyarrow
+pydantic
+shortuuid
+sqlalchemy
+uvicorn
+llama_index 
+langchain_neo4j 
+langchain_huggingface 
+llama_index-embeddings-huggingface 
+llama_index-llms-huggingface
+llama-index-graph-stores-neo4j
+transformers
