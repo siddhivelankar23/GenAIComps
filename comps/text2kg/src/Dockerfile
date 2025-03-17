@@ -31,7 +31,7 @@ RUN pip install --no-cache-dir --upgrade pip setuptools && \
 ENV https_proxy=${https_proxy}
 ENV http_proxy=${http_proxy}
 ENV no_proxy=${no_proxy}
-ENV LLM_ID=${LLM_ID:-"Babelscape/rebel-large"}
+ENV LLM_ID=${LLM_ID:-"HuggingFaceH4/zephyr-7b-alpha"}
 ENV SPAN_LENGTH=${SPAN_LENGTH:-"1024"}
 ENV OVERLAP=${OVERLAP:-"100"}
 ENV MAX_LENGTH=${MAX_NEW_TOKENS:-"256"}

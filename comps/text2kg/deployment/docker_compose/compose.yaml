@@ -10,12 +10,12 @@ services:
      image: ${REGISTRY:-opea}/text2kg:${TAG:-latest}
      container_name: text2kg
      ports:
-         - ${TEXT2GRAPH_PORT:-8090}:8090
+         - ${TEXT2KG_PORT:-8090}:8090
      environment:
          - no_proxy=${no_proxy}
          - https_proxy=${https_proxy}
          - http_proxy=${http_proxy}
-         - LLM_MODEL_ID=${LLM_MODEL_ID:-"Babelscape/rebel-large"}
+         - LLM_MODEL_ID=${LLM_MODEL_ID:-"HuggingFaceH4/zephyr-7b-alpha"}
          - HUGGINGFACEHUB_API_TOKEN=${HUGGINGFACEHUB_API_TOKEN}
      depends_on:
          - tgi-server

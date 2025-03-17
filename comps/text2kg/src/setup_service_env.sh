@@ -15,7 +15,7 @@ export HF_TOKEN=${HF_TOKEN}
 
 export LLM_ID=${LLM_ID:-"HuggingFaceH4/zephyr-7b-alpha"}
 export LLM_MODEL_ID=${LLM_MODEL_ID:-"HuggingFaceH4/zephyr-7b-alpha"}
-export LLM_ENDPOINT_PORT=${LLM_MODEL_ID:-"9001"}
+export LLM_ENDPOINT_PORT=${LLM_ENDPOINT_PORT:-"9001"}
 
 export SPAN_LENGTH=${SPAN_LENGTH:-"1024"}
 export OVERLAP=${OVERLAP:-"100"}
