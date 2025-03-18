@@ -12,9 +12,12 @@ Text to Knowledge Graph (text2kg) Microservice is a specialized service designed
  pip install -r requirements.txt
 ```
 
-### Configure LLM Parameters based on the model selected.
+### 1. TGI 
 
-```
+#### a. Start the TGI microservice
+```bash
+
+export TGI_PORT=8008
 export HF_TOKEN=${HF_TOKEN}
 export LLM_MODEL_ID=${LLM_MODEL_ID:-"HuggingFaceH4/zephyr-7b-alpha"}
 export LLM_ENDPOINT_PORT=${LLM_ENDPOINT_PORT:-"9001"}
@@ -24,15 +27,6 @@ export OVERLAP=${OVERLAP:-"100"}
 export MAX_LENGTH=${MAX_NEW_TOKENS:-"256"}
 export TGI_PORT=8008
 export PYTHONPATH="/home/user/"
-```
-
-
-### 1. TGI 
-
-#### a. Start the TGI microservice
-```bash
-export LLM_MODEL_ID="mistralai/Mistral-7B-Instruct-v0.3"
-export TGI_PORT=8008
 
 docker run -d --name="text2graph-tgi-endpoint" --ipc=host -p $TGI_PORT:80 -v ./data:/data --shm-size 1g -e HF_TOKEN=${HF_TOKEN} -e model=${LLM_MODEL_ID} ghcr.io/huggingface/text-generation-inference:2.1.0 --model-id $LLM_MODEL_ID
 ```
