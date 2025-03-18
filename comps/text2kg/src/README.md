@@ -98,7 +98,7 @@ docker run -i -t --net=host --ipc=host -p 8090 opea/text2kg:latest -v data:/home
 
 ## B. Start text2kg and dependent microservices with docker-compose (Option B)
 ```bash
-comps/text2kg/deployment/docker_compose/
+cd comps/text2kg/deployment/docker_compose/
 ```
 Export service name and log path
 ```bash
