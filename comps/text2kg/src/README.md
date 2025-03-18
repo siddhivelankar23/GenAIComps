@@ -119,10 +119,10 @@ docker compose -f compose.yaml -f custom-override.yml up ${service_name}  -d > $
  pip install -r requirements.txt
 ```
 
-## Start tgi and neo4j mircoservices - 
+## Start tgi and neo4j mircoservices 
 Refer to sections 1.A.1. and 1.A.2.
 
-## Start text2kg microservice using python script - 
+## Start text2kg microservice using python script 
 
 ```bash
 python3 comps/text2kg/src/opea_text2kg_microservice.py
