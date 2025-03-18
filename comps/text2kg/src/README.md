@@ -81,6 +81,10 @@ docker run \
 
 ### 3. Text2kg
 
+```bash
+cd comps/text2kg/src/
+```
+
 Build the text2kg docker image
 ```bash
 docker build -f Dockerfile -t opea/text2kg:latest ../../../
@@ -88,7 +92,7 @@ docker build -f Dockerfile -t opea/text2kg:latest ../../../
 
 Launch the docker container
 ```bash
-docker run -i -t --net=host --ipc=host -p 8090 opea/text2kg:latest -v comps/text2kg/src/data:/home/user/comps/text2kg/src/data /bin/bash
+docker run -i -t --net=host --ipc=host -p 8090 opea/text2kg:latest -v data:/home/user/comps/text2kg/src/data /bin/bash
 ```
 
 
