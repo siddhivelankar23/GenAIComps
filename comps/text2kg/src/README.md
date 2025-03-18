@@ -24,11 +24,6 @@ export OVERLAP=${OVERLAP:-"100"}
 export MAX_LENGTH=${MAX_NEW_TOKENS:-"256"}
 export TGI_PORT=8008
 export PYTHONPATH="/home/user/"
-
-export NEO4J_USERNAME=${NEO4J_USERNAME:-"neo4j"}
-export NEO4J_PASSWORD=${NEO4J_PASSWORD:-"neo4j_password"}
-export NEO4J_PORT1={$NEO4J_PORT1:-7474}:7474
-export NEO4J_PORT2={$NEO4J_PORT2:-7687}:7687
 ```
 
 
@@ -69,6 +64,10 @@ docker pull neo4j:latest
 ```bash
 export NEO4J_AUTH=neo4j/password
 export NEO4J_PLUGINS=\[\"apoc\"\]
+export NEO4J_USERNAME=${NEO4J_USERNAME:-"neo4j"}
+export NEO4J_PASSWORD=${NEO4J_PASSWORD:-"neo4j_password"}
+export NEO4J_PORT1={$NEO4J_PORT1:-7474}:7474
+export NEO4J_PORT2={$NEO4J_PORT2:-7687}:7687
 ```
 
 #### c. Run Neo4J service
