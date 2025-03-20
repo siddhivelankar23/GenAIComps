@@ -2,6 +2,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+set -x
 WORKPATH=$(git rev-parse --show-toplevel)
 TAG='latest'
 LOG_PATH="$WORKPATH/comps/text2kg/deployment/docker_compose"
@@ -12,11 +13,11 @@ echo $WORKPATH
 ip_address=$(hostname -I | awk '{print $1}')
 service_name="text2kg-gaudi"
 
-function build_docker_graph() {
+function build_docker() {
     echo "===================  START BUILD DOCKER ========================"
     cd $WORKPATH
     echo $(pwd)
-    docker build --no-cache -t opea/test2graph:${TAG} --build-arg https_proxy=$https_proxy --build-arg http_proxy=$http_proxy -f comps/text2kg/src/Dockerfile .
+    docker build --no-cache -t opea/text2kg:${TAG} --build-arg https_proxy=$https_proxy --build-arg http_proxy=$http_proxy -f comps/text2kg/src/Dockerfile .
     if [ $? -ne 0 ]; then
         echo "opea/text2kg built fail"
         exit 1
@@ -38,7 +39,31 @@ function start_service() {
 function validate_microservice() {
     echo "===================  START VALIDATE ========================"
     cd $WORKPATH/tests/text2kg
-    python3 example_from_file.py
+    FILE_URL = "https://gist.githubusercontent.com/wey-gu/75d49362d011a0f0354d39e396404ba2/raw/0844351171751ebb1ce54ea62232bf5e59445bb7/paul_graham_essay.txt"
+    wget -P "$TEMP_DIR" "$FILE_URL"
+    # Check if the download was successful
+    if [ $? -eq 0 ]; then
+        echo "Download successful"
+        return 0
+    else
+        echo "Download failed"
+        return 1
+    fi
+
+    result=$(http_proxy="" curl -X 'POST' \
+          'http://localhost:8090/v1/text2kg?input_text=Who%20is%20paul%20graham%3F' \
+          -H 'accept: application/json' \
+          -d '')
+
+    if [[ $result == *"output"* ]]; then
+        echo $result
+        echo "Result correct."
+    else
+        echo "Result wrong. Received was $result"
+        docker logs text2kg > ${LOG_PATH}/text2kg.log
+        exit 1
+    fi
+    
     echo "===================  END VALIDATE ========================"
 }
 
@@ -53,12 +78,11 @@ function main() {
 
     stop_docker
 
-    build_docker_graph
+    build_docker
     start_service
     validate_microservice
 
-    ##stop_docker
-    ##echo y | docker system prune
+    stop_docker
 
 }
 
