@@ -52,10 +52,17 @@ class GenerateKG:
 
     def __graph_index(self, documents, llm,embed_model,graph_store):
           
-          entities = os.environ.get["entities"]
-          relations = os.environ.get["relations"] 
-          validation_schema = os.environ.get["validation_schema"] 
+          entities = os.environ.get('ENTITIES', '').split(',')
+          relations = os.environ.get('RELATIONS', '').split(',')
 
+          # Get and parse validation schema
+          validation_schema_str = os.environ.get('VALIDATION_SCHEMA', '{}')
+          try:
+                validation_schema = json.loads(validation_schema_str)
+          except json.JSONDecodeError:
+                print("Warning: Could not parse VALIDATION_SCHEMA")
+                validation_schema = {}
+          
           storage_context = StorageContext.from_defaults(graph_store=graph_store)
           neo4j_index = KnowledgeGraphIndex.from_documents(
                   documents=documents,
