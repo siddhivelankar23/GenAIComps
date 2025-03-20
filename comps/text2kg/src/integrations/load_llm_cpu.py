@@ -63,24 +63,3 @@ class load_llm():
           embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
           return embed_model
 
-#################################################################################################
-##
-##    def llm_pipe(self):
-##        print(f'running llm infernece model load')
-##        model_id1 = "HuggingFaceH4/zephyr-7b-alpha"
-##        tokenizer = AutoTokenizer.from_pretrained(model_id1)
-##        model = AutoModelForCausalLM.from_pretrained(model_id1)
-##        pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, max_new_tokens=200)
-##        hfpipe = HuggingFacePipeline(pipeline=pipe)
-##        print(f'running llm infernece set up done ')
-##        return hfpipe
-##
-##    def load_all_models(self):
-##       llm = self.load_llm_models()
-##       embed_model = self.load_embed_model()
-##       hfpipe = self.llm_pipe()
-##       result = hfpipe('who is god?')
-##       print(result)
-##       print(f'running llm infernece set up done ')
-##       return llm, embed_model, hfpipe
-##       
