@@ -20,60 +20,41 @@ class GenerateKG:
          self.embed_model       = models.load_embed_model()
          Settings.llm           = self.llm
          Settings.embed_model   = self.embed_model
+         self.NEO4J_URL = os.environ.get["NEO4J_URL"] 
+         self.NEO4J_URI = os.environ.get["NEO4J_URI"] 
+         self.NEO4J_USERNAME = os.environ.get["NEO4J_USERNAME"] 
+         self.NEO4J_PASSWORD = os.environ.get["NEO4J_PASSWORD"] 
+         self.NEO4J_DATABASE = os.environ["NEO4J_DATABASE"] 
          print(f' loading and preparing llm and embedding models')
 
     def __load_docs(self):
-        TEMP_DIR = os.path.join(os.getcwd(), "data")
-        FILE_URL = "https://gist.githubusercontent.com/wey-gu/75d49362d011a0f0354d39e396404ba2/raw/0844351171751ebb1ce54ea62232bf5e59445bb7/paul_graham_essay.txt"
-        command = ["wget", "-P", TEMP_DIR, FILE_URL]
-        try:
-             result = subprocess.run(command, check=True, capture_output=True, text=True)
-             print(f"Download successful. Output:\n{result.stdout}")
-        except subprocess.CalledProcessError as e:
-             print(f"Download failed. Error:\n{e.stderr}")
+        
 
-
-        #text = open(f"{TEMP_DIR}/paul_graham_essay.txt").read()
-        #encoded_data2 = quote(text)
-        #reader = SimpleDirectoryReader(input_dir=self.data_directory)
+        TEMP_DIR = os.environ.get["TEMP_DIR"] 
         reader = SimpleDirectoryReader(input_dir=TEMP_DIR)
         documents = reader.load_data()
         print(f'loading documents')
-        #print(f'READING DOCS {documents[:1000]}')
+        
         return documents
 #-------------------------------------------------------------------------------
 #   Link up to Neo4j
 #-------------------------------------------------------------------------------
-    def __neo4j_link(self,NEO4J_URL, NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD, NEO4J_DATABASE):
-          import os
-          import neo4j
-          from llama_index.graph_stores.neo4j import Neo4jPropertyGraphStore
+    def __neo4j_link(self):
 
-          os.environ["NEO4J_URL"] = NEO4J_URL
-          os.environ["NEO4J_URI"] = NEO4J_URI
-          os.environ["NEO4J_USERNAME"] = NEO4J_USERNAME
-          os.environ["NEO4J_PASSWORD"] = NEO4J_PASSWORD
-          os.environ["NEO4J_DATABASE"] = NEO4J_DATABASE
-
+         
           graph_store = Neo4jGraphStore(
-                  username=NEO4J_USERNAME,
-                  password=NEO4J_PASSWORD,
-                  url=NEO4J_URL,
-                  database=NEO4J_DATABASE,
+                  username=self.NEO4J_USERNAME,
+                  password=self.NEO4J_PASSWORD,
+                  url=self.NEO4J_URL,
+                  database=self.NEO4J_DATABASE,
           )
           return graph_store
 
     def __graph_index(self, documents, llm,embed_model,graph_store):
-          # best practice to use upper-case
-          entities = Literal["PERSON", "PLACE", "ORGANIZATION"]
-          relations = Literal["HAS", "PART_OF", "WORKED_ON", "WORKED_WITH", "WORKED_AT"]
-
-          # define which entities can have which relations
-          validation_schema = {
-              "PERSON": ["HAS", "PART_OF", "WORKED_ON", "WORKED_WITH", "WORKED_AT"],
-              "PLACE": ["HAS", "PART_OF", "WORKED_AT"],
-              "ORGANIZATION": ["HAS", "PART_OF", "WORKED_WITH"],
-          }
+          
+          entities = os.environ.get["entities"]
+          relations = os.environ.get["relations"] 
+          validation_schema = os.environ.get["validation_schema"] 
 
           storage_context = StorageContext.from_defaults(graph_store=graph_store)
           neo4j_index = KnowledgeGraphIndex.from_documents(
@@ -86,12 +67,10 @@ class GenerateKG:
           return neo4j_index
 
     def __create_index(self,documents,embed_model,llm):
-        NEO4J_URL = "neo4j://localhost:7687"
-        NEO4J_URI = "neo4j://localhost:7687"
-        NEO4J_USERNAME = "neo4j"
-        NEO4J_PASSWORD = "intel123"
-        NEO4J_DATABASE = "neo4j"
-        graph_store = self.__neo4j_link(NEO4J_URL, NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD, NEO4J_DATABASE)
+        """
+        Creates index in neo4j database
+        """
+        graph_store = self.__neo4j_link(self.NEO4J_URL, self.NEO4J_URI, self.NEO4J_USERNAME, self.NEO4J_PASSWORD, self.NEO4J_DATABASE)
         neo4j_index = self.__graph_index(documents, llm, embed_model, graph_store)
         print(f" neo4j index {neo4j_index.index_struct}")
         print(f'creating graph index for documents')
