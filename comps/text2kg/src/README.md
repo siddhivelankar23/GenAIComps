@@ -106,11 +106,15 @@ export service_name="text2kg"
 export LOG_PATH=$PWD
 ```
 
-Launch using  the following command to run on cpu
+Launch using the following command to run on cpu
 ```bash
 docker compose -f compose.yaml -f custom-override.yml up ${service_name}  -d > ${LOG_PATH}/start_services_with_compose.log
 ```
-# 🚀 2. Start microservice with Docker (Option 2)
+Launch using  the following command to run on gaudi
+```bash
+docker compose -f compose.yaml up ${service_name}  -d > ${LOG_PATH}/start_services_with_compose.log
+```
+# 🚀 2. Start microservice with Python (Option 2)
 
 
 ## Install Requirements
