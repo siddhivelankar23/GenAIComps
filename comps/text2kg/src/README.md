@@ -50,7 +50,7 @@ export TGI_LLM_ENDPOINT="http://${your_ip}:${TGI_PORT}"
 docker pull neo4j:latest
 ```
 
-#### b. Configure the username, password, dbname and validation schema variables
+#### b. Configure the username, password, dbname 
 
 ```bash
 export NEO4J_AUTH=neo4j/password
@@ -59,6 +59,11 @@ export NEO4J_USERNAME=${NEO4J_USERNAME:-"neo4j"}
 export NEO4J_PASSWORD=${NEO4J_PASSWORD:-"neo4j_password"}
 export NEO4J_PORT1={$NEO4J_PORT1:-7474}:7474
 export NEO4J_PORT2={$NEO4J_PORT2:-7687}:7687
+```
+
+Export temporary directory and make sure the files that need to be queried are in this temporary directory
+Export relational variables based on your text. For example -
+```bash
 export TEMP_DIR=$(pwd)
 export ENTITIES="PERSON,PLACE,ORGANIZATION"
 export RELATIONS="HAS,PART_OF,WORKED_ON,WORKED_WITH,WORKED_AT"
