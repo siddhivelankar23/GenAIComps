@@ -30,7 +30,7 @@ function build_docker() {
 function start_service() {
     echo "===================  START SERVICE ========================"
     cd $WORKPATH/comps/text2kg/deployment/docker_compose
-    docker compose up ${service_name} -d > ${LOG_PATH}/start_services_with_compose.log
+    docker compose -f compose.yaml -f custom-override.yml up ${service_name} -d > ${LOG_PATH}/start_services_with_compose.log
 
     sleep 10s
     echo "===================  END SERVICE ========================"
