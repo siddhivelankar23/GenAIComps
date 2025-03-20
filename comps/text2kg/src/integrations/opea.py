@@ -38,9 +38,6 @@ llm = HuggingFaceEndpoint(
     **generation_params,
 )
 
-
-
-
 class Input(BaseModel):
     input_text: str
 
@@ -81,16 +78,11 @@ class OpeaText2KG(OpeaComponent):
             text : dict
         """
 
-        #question = "who is paul graham?"
         query_engine = neo4j_index.as_query_engine(
            include_text=False, response_mode="tree_summarize"
         )
 
         result = query_engine.query(input_text)
         print(result)
-
-        #tb = TripletBuilder()
-        #graph_triplets = await tb.extract_graph(input_text)
-        #result = {"graph_triplets": graph_triplets}
 
         return result
