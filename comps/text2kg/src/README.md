@@ -22,9 +22,6 @@ export HF_TOKEN=${HF_TOKEN}
 export LLM_MODEL_ID=${LLM_MODEL_ID:-"HuggingFaceH4/zephyr-7b-alpha"}
 export LLM_ENDPOINT_PORT=${LLM_ENDPOINT_PORT:-"9001"}
 
-export SPAN_LENGTH=${SPAN_LENGTH:-"1024"}
-export OVERLAP=${OVERLAP:-"100"}
-export MAX_LENGTH=${MAX_NEW_TOKENS:-"256"}
 export TGI_PORT=8008
 export PYTHONPATH="/home/user/"
 
@@ -53,7 +50,7 @@ export TGI_LLM_ENDPOINT="http://${your_ip}:${TGI_PORT}"
 docker pull neo4j:latest
 ```
 
-#### b. Configure the username, password and dbname
+#### b. Configure the username, password, dbname and validation schema variables
 
 ```bash
 export NEO4J_AUTH=neo4j/password
@@ -62,6 +59,14 @@ export NEO4J_USERNAME=${NEO4J_USERNAME:-"neo4j"}
 export NEO4J_PASSWORD=${NEO4J_PASSWORD:-"neo4j_password"}
 export NEO4J_PORT1={$NEO4J_PORT1:-7474}:7474
 export NEO4J_PORT2={$NEO4J_PORT2:-7687}:7687
+export TEMP_DIR=$(pwd)
+export ENTITIES="PERSON,PLACE,ORGANIZATION"
+export RELATIONS="HAS,PART_OF,WORKED_ON,WORKED_WITH,WORKED_AT"
+export VALIDATION_SCHEMA='{
+    "PERSON": ["HAS", "PART_OF", "WORKED_ON", "WORKED_WITH", "WORKED_AT"],
+    "PLACE": ["HAS", "PART_OF", "WORKED_AT"],
+    "ORGANIZATION": ["HAS", "PART_OF", "WORKED_WITH"]
+}'
 ```
 
 #### c. Run Neo4J service
