@@ -115,7 +115,7 @@ Export service name and log path
 export service_name="text2kg"
 export LOG_PATH=$PWD
 ```
-
+Export NEO4J variables - refer to section 1.A.2.b.
 Launch using the following command to run on cpu
 ```bash
 docker compose -f compose.yaml -f custom-override.yml up ${service_name}  -d > ${LOG_PATH}/start_services_with_compose.log
