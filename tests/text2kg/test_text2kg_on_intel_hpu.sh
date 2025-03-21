@@ -6,7 +6,7 @@ set -x
 WORKPATH=$(git rev-parse --show-toplevel)
 TAG='latest'
 LOG_PATH="$WORKPATH/comps/text2kg/deployment/docker_compose"
-source $WORKPATH/comps/text2kg/src/setup_service_env.sh
+source $WORKPATH/comps/text2kg/src/environment_setup.sh
 
 
 echo $WORKPATH
