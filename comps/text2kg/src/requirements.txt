@@ -3,17 +3,13 @@
 docarray[full]
 fastapi
 pyprojroot
-hanging_threads
 opentelemetry-api
 opentelemetry-exporter-otlp
 opentelemetry-sdk
 pandas
 prometheus_fastapi_instrumentator
-psycopg2-binary 
-pyarrow
 pydantic
 shortuuid
-sqlalchemy
 uvicorn
 llama_index 
 langchain_neo4j 
