@@ -1,4 +1,4 @@
-# Text to knowledge graph microservice
+# Text to knowledge graph (text2kg) microservice
 
 Text to Knowledge Graph (text2kg) Microservice is a specialized service designed to extract structured knowledge graphs from unstructured text data. Built using an encoder-decoder architecture, it leverages advanced Large Language Models (LLMs) to identify entities and relationships within text documents, converting them into meaningful graph triplets. This microservices uses the neo4j database to store the data and tgi microservice for using the llm.
 
