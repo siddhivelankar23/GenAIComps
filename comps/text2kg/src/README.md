@@ -61,7 +61,8 @@ export NEO4J_PORT1={$NEO4J_PORT1:-7474}:7474
 export NEO4J_PORT2={$NEO4J_PORT2:-7687}:7687
 ```
 
-Export temporary directory and make sure the files that need to be queried are in this temporary directory
+Export temporary directory and make sure the files that need to be queried are in this temporary directory.
+
 Export relational variables based on your text. For example -
 ```bash
 export TEMP_DIR=$(pwd)
