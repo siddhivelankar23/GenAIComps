@@ -72,29 +72,13 @@ function validate_microservice() {
         echo "Neo4j connection successful"
         
         # Verify knowledge graph entities
-        verify_entities=$(cypher-shell -a bolt://localhost:7687 -u neo4j -p password <<EOF
-            MATCH (p:Person {name: 'Paul Graham'})
-            OPTIONAL MATCH (p)-[:WRITTEN_BY]-(articles:Article)
-            OPTIONAL MATCH (p)-[:FOUNDED]-(companies:Organization)
-            RETURN 
-                COUNT(p) as person_count,
-                COUNT(DISTINCT articles) as article_count,
-                COUNT(DISTINCT companies) as company_count
-        EOF)
+        verify_entities=$(cypher-shell -a bolt://localhost:7687 -u neo4j -p password "MATCH (p:Person {name: 'Paul Graham'}) OPTIONAL MATCH (p)-[:WRITTEN_BY]-(articles:Article) OPTIONAL MATCH (p)-[:FOUNDED]-(companies:Organization) RETURN COUNT(p) as person_count, COUNT(DISTINCT articles) as article_count, COUNT(DISTINCT companies) as company_count")
         
         if [ $? -eq 0 ]; then
             echo "Knowledge graph entities verified"
             
             # Verify meaningful relationships
-            verify_relationships=$(cypher-shell -a bolt://localhost:7687 -u neo4j -p password <<EOF
-                MATCH (p:Person {name: 'Paul Graham'})
-                WITH p
-                OPTIONAL MATCH (p)-[:WRITTEN_BY]-(articles:Article)
-                OPTIONAL MATCH (p)-[:FOUNDED]-(yc:Organization {name: 'Y Combinator'})
-                RETURN 
-                    COUNT(DISTINCT articles) > 0 AS has_articles,
-                    COUNT(DISTINCT yc) > 0 AS has_yc
-            EOF)
+            verify_relationships=$(cypher-shell -a bolt://localhost:7687 -u neo4j -p password "MATCH (p:Person {name: 'Paul Graham'}) WITH p OPTIONAL MATCH (p)-[:WRITTEN_BY]-(articles:Article) OPTIONAL MATCH (p)-[:FOUNDED]-(yc:Organization {name: 'Y Combinator'}) RETURN COUNT(DISTINCT articles) > 0 AS has_articles, COUNT(DISTINCT yc) > 0 AS has_yc")
             
             if [ $? -eq 0 ]; then
                 echo "Meaningful relationships verified"
