@@ -48,6 +48,6 @@ WORKDIR /home/user/comps/text2kg/src/
 
 WORKDIR /home/user/comps/text2kg/src/
 
-RUN bash -c 'source /home/user/comps/text2kg/src/setup_service_env.sh'
+RUN bash -c 'source /home/user/comps/text2kg/src/environment_setup.sh'
 
 ENTRYPOINT ["python", "opea_text2kg_microservice.py"]
