@@ -7,7 +7,6 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.huggingface import HuggingFaceLLM
 from llama_index.graph_stores.neo4j import Neo4jPropertyGraphStore, Neo4jGraphStore
 from llama_index.core.prompts import PromptTemplate
-from comps.text2kg.src.integrations.load_llm_cpu import load_llm
 import subprocess
 import nest_asyncio
 nest_asyncio.apply()
@@ -15,9 +14,8 @@ nest_asyncio.apply()
 class GenerateKG:
     def __init__(self, llm, embedding_model , data_directory):
          self.data_directory    = data_directory
-         models                 = load_llm(llm_model_engine=llm, embedding_model_engine=embedding_model)
-         self.llm               = models.load_llm_models()
-         self.embed_model       = models.load_embed_model()
+         self.llm               = llm
+         self.embed_model       = embedding_model
          Settings.llm           = self.llm
          Settings.embed_model   = self.embed_model
          self.NEO4J_URL = os.environ.get["NEO4J_URL"] 
