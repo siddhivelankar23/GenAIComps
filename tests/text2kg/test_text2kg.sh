@@ -39,29 +39,96 @@ function start_service() {
 function validate_microservice() {
     echo "===================  START VALIDATE ========================"
     cd $WORKPATH/tests/text2kg
-    FILE_URL = "https://gist.githubusercontent.com/wey-gu/75d49362d011a0f0354d39e396404ba2/raw/0844351171751ebb1ce54ea62232bf5e59445bb7/paul_graham_essay.txt"
+    
+    # Download test file
+    FILE_URL="https://gist.githubusercontent.com/wey-gu/75d49362d011a0f0354d39e396404ba2/raw/0844351171751ebb1ce54ea62232bf5e59445bb7/paul_graham_essay.txt"
     wget -P "$TEMP_DIR" "$FILE_URL"
-    # Check if the download was successful
-    if [ $? -eq 0 ]; then
+    
+    if wget -P "$TEMP_DIR" "$FILE_URL"; then
         echo "Download successful"
-        return 0
     else
         echo "Download failed"
         return 1
     fi
-
-    result=$(http_proxy="" curl -X 'POST' \
-          'http://localhost:8090/v1/text2kg?input_text=Who%20is%20paul%20graham%3F' \
-          -H 'accept: application/json' \
-          -d '')
-
+    
+    # Test API endpoint
+    result=$(curl -X POST \
+          -H "accept: application/json" \
+          -d "" \
+          http://localhost:8090/v1/text2kg?input_text=Who%20is%20paul%20graham%3F)
+    
     if [[ $result == *"output"* ]]; then
         echo $result
-        echo "Result correct."
+        echo "API response contains expected structure"
     else
         echo "Result wrong. Received was $result"
         docker logs text2kg > ${LOG_PATH}/text2kg.log
-        exit 1
+        return 1
+    fi
+    
+    # Test Neo4j connection and data loading
+    neo4j_test=$(cypher-shell -a bolt://localhost:7687 -u neo4j -p password "RETURN 'Connection OK' as result")
+    if [ $? -eq 0 ]; then
+        echo "Neo4j connection successful"
+        
+        # Verify knowledge graph entities
+        verify_entities=$(cypher-shell -a bolt://localhost:7687 -u neo4j -p password <<EOF
+            MATCH (p:Person {name: 'Paul Graham'})
+            OPTIONAL MATCH (p)-[:WRITTEN_BY]-(articles:Article)
+            OPTIONAL MATCH (p)-[:FOUNDED]-(companies:Organization)
+            RETURN 
+                COUNT(p) as person_count,
+                COUNT(DISTINCT articles) as article_count,
+                COUNT(DISTINCT companies) as company_count
+        EOF)
+        
+        if [ $? -eq 0 ]; then
+            echo "Knowledge graph entities verified"
+            
+            # Verify meaningful relationships
+            verify_relationships=$(cypher-shell -a bolt://localhost:7687 -u neo4j -p password <<EOF
+                MATCH (p:Person {name: 'Paul Graham'})
+                WITH p
+                OPTIONAL MATCH (p)-[:WRITTEN_BY]-(articles:Article)
+                OPTIONAL MATCH (p)-[:FOUNDED]-(yc:Organization {name: 'Y Combinator'})
+                RETURN 
+                    COUNT(DISTINCT articles) > 0 AS has_articles,
+                    COUNT(DISTINCT yc) > 0 AS has_yc
+            EOF)
+            
+            if [ $? -eq 0 ]; then
+                echo "Meaningful relationships verified"
+                
+                # Verify answer content
+                expected_roles=("scientist" "writer" "entrepreneur")
+                actual_answer=$(echo "$result" | jq -r '.output')
+                
+                roles_found=true
+                for role in "${expected_roles[@]}"; do
+                    if ! echo "$actual_answer" | grep -iq "$role"; then
+                        roles_found=false
+                        break
+                    fi
+                done
+                
+                if $roles_found; then
+                    echo "Answer content verified"
+                    return 0
+                else
+                    echo "Missing expected roles in answer"
+                    return 1
+                fi
+            else
+                echo "Failed to verify relationships"
+                return 1
+            fi
+        else
+            echo "Failed to verify entities"
+            return 1
+        fi
+    else
+        echo "Neo4j connection failed"
+        return 1
     fi
     
     echo "===================  END VALIDATE ========================"
