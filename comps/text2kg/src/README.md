@@ -1,16 +1,23 @@
 # Text to knowledge graph (text2kg) microservice
 
-Text to Knowledge Graph (text2kg) Microservice is a specialized service designed to extract structured knowledge graphs from unstructured text data. Built using an encoder-decoder architecture, it leverages advanced Large Language Models (LLMs) to identify entities and relationships within text documents, converting them into meaningful graph triplets. This microservices uses the neo4j database to store the data and tgi microservice for using the llm.
+Text to Knowledge Graph (text2kg) Microservice enables the conversion of unstructured text into structured data by generating graph triplets. This process, which can be complex, has become more accessible with the rise of Large Language Models (LLMs), making it a mainstream solution for data extraction tasks. There are two primary approaches to extracting graph triplets, depending on the architecture of the LLM— decoder-only models and encoder-decoder models.
+
+## Decoder-Only Models
+Decoder-only models are optimized for fast inference by skipping the encoding step. They work well for tasks where input-output mappings are relatively simple, or when multitasking is required. These models are ideal when computational efficiency and prompt-based output generation are priorities. However, decoder-only models may struggle with tasks that require deep contextual understanding or when input-output structures are highly complex or varied.
+
+## Encoder-Decoder Models
+Encoder-decoder models excel at handling complex relations and data sources, providing high performance by effectively encoding contextual information. This makes them ideal for tasks that require detailed parsing of text into structured formats, such as knowledge graph construction from unstructured data.
+
+## Features
+Input Formats: Accepts text from documents, text files, or strings.
+
+Output: Extracts graph triplets and nodes.
+
+Post-Processing: Includes entity disambiguation to merge duplicate entities before generating Cypher code.
 
 # 🚀 1. Start microservice with Docker (Option 1)
 
 ## A. Start individual microservices using docker cli (Option A)
-
-### Install Requirements
-
-```bash
- pip install -r requirements.txt
-```
 
 ### 1. TGI 
 
