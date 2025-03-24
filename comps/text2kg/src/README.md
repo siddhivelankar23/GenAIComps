@@ -35,7 +35,7 @@ export TGI_PORT=8008
 export HF_TOKEN=${HF_TOKEN}
 export LLM_MODEL_ID=${LLM_MODEL_ID:-"HuggingFaceH4/zephyr-7b-alpha"}
 export LLM_ENDPOINT_PORT=${LLM_ENDPOINT_PORT:-"9001"}
-export TGI_PORT=8008
+export TGI_LLM_ENDPOINT="http://${your_ip}:${TGI_PORT}"
 export PYTHONPATH="/home/user/"
 ```
 
@@ -53,11 +53,6 @@ curl http://${your_ip}:${TGI_PORT}/generate \
   -H 'Content-Type: application/json'
 ```
 
-#### c. Setup Environment Variables to host TGI
-
-```bash
-export TGI_LLM_ENDPOINT="http://${your_ip}:${TGI_PORT}"
-```
 ### 2. Neo4J
 #### a. Download Neo4J image
 
