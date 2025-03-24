@@ -7,6 +7,7 @@
 export https_proxy=${https_proxy}
 export http_proxy=${http_proxy}
 export no_proxy=${no_proxy}
+export your_ip=${your_ip}
 ################################################################
 # Configure LLM Parameters based on the model selected.
 ################################################################
@@ -19,6 +20,7 @@ export LLM_ENDPOINT_PORT=${LLM_ENDPOINT_PORT:-"9001"}
 
 export TGI_PORT=8008
 export PYTHONPATH="/home/user/"
+export TGI_LLM_ENDPOINT="http://${your_ip}:${TGI_PORT}" 
 
 export NEO4J_USERNAME=${NEO4J_USERNAME:-"neo4j"}
 export NEO4J_PASSWORD=${NEO4J_PASSWORD:-"neo4j_password"}
@@ -26,6 +28,9 @@ export NEO4J_URL=${NEO4J_URL:-"neo4j://localhost:7687"}
 export NEO4J_URI=${NEO4J_URI:-"neo4j://localhost:7687"}
 export NEO4J_PORT1={$NEO4J_PORT1:-7474}:7474
 export NEO4J_PORT2={$NEO4J_PORT2:-7687}:7687
+export NEO4J_AUTH=neo4j/password
+export NEO4J_PLUGINS=\[\"apoc\"\]
+
 export TEMP_DIR=$(pwd)
 export ENTITIES="PERSON,PLACE,ORGANIZATION"
 export RELATIONS="HAS,PART_OF,WORKED_ON,WORKED_WITH,WORKED_AT"
