@@ -8,11 +8,10 @@ Decoder-only models are optimized for fast inference by skipping the encoding st
 
 
 ## Features
-Input Formats: Accepts text from documents, text files, or strings.
+Input Formats: Accepts text from documents, text files, or strings*.
 
-Output: Extracts graph triplets and nodes.
+Output: Answer to the query asked by the user.
 
-Post-Processing: Includes entity disambiguation to merge duplicate entities before generating Cypher code.
 
 # 🚀 1. Start microservice with Docker (Option 1)
 
@@ -71,7 +70,7 @@ export NEO4J_PORT2={$NEO4J_PORT2:-7687}:7687
 export NEO4J_URL=${NEO4J_URL:-"neo4j://localhost:7687"}
 export NEO4J_URI=${NEO4J_URI:-"neo4j://localhost:7687"}
 
-export TEMP_DIR=$(pwd)
+export DATA_DIRECTORY=$(pwd)
 export ENTITIES="PERSON,PLACE,ORGANIZATION"
 export RELATIONS="HAS,PART_OF,WORKED_ON,WORKED_WITH,WORKED_AT"
 export VALIDATION_SCHEMA='{
@@ -158,3 +157,5 @@ curl -X 'POST' \
   -H 'accept: application/json' \
   -d ''
 ```
+
+* Make sure your input has the necessary in
