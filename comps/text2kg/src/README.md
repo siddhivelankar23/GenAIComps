@@ -20,19 +20,26 @@ Post-Processing: Includes entity disambiguation to merge duplicate entities befo
 
 ## A. Start individual microservices using docker cli (Option A)
 
+Update the environment_setup.sh file with your device and user information, and source it using - 
+```bash
+source comps/text2kg/src/environment_setup.sh
+```
+If you skip this step, you can export variables related to individual services as mentioned in each of the microservices.
 ### 1. TGI 
 
 #### a. Start the TGI microservice
 ```bash
+(you can skip this part if you have sourced your environment_setup file already)
 
 export TGI_PORT=8008
 export HF_TOKEN=${HF_TOKEN}
 export LLM_MODEL_ID=${LLM_MODEL_ID:-"HuggingFaceH4/zephyr-7b-alpha"}
 export LLM_ENDPOINT_PORT=${LLM_ENDPOINT_PORT:-"9001"}
-
 export TGI_PORT=8008
 export PYTHONPATH="/home/user/"
+```
 
+```bash
 docker run -d --name="text2graph-tgi-endpoint" --ipc=host -p $TGI_PORT:80 -v ./data:/data --shm-size 1g -e HF_TOKEN=${HF_TOKEN} -e model=${LLM_MODEL_ID} ghcr.io/huggingface/text-generation-inference:2.1.0 --model-id $LLM_MODEL_ID
 ```
 
@@ -58,21 +65,19 @@ export TGI_LLM_ENDPOINT="http://${your_ip}:${TGI_PORT}"
 docker pull neo4j:latest
 ```
 
-#### b. Configure the username, password, dbname 
+#### b. Configure the username, password, dbname, and other neo4j relational variables based on your data (this is an example)
 
 ```bash
+(you can skip this part if you have sourced your environment_setup file already)
 export NEO4J_AUTH=neo4j/password
 export NEO4J_PLUGINS=\[\"apoc\"\]
 export NEO4J_USERNAME=${NEO4J_USERNAME:-"neo4j"}
 export NEO4J_PASSWORD=${NEO4J_PASSWORD:-"neo4j_password"}
 export NEO4J_PORT1={$NEO4J_PORT1:-7474}:7474
 export NEO4J_PORT2={$NEO4J_PORT2:-7687}:7687
-```
+export NEO4J_URL=${NEO4J_URL:-"neo4j://localhost:7687"}
+export NEO4J_URI=${NEO4J_URI:-"neo4j://localhost:7687"}
 
-Export temporary directory and make sure the files that need to be queried are in this temporary directory.
-
-Export relational variables based on your text. For example -
-```bash
 export TEMP_DIR=$(pwd)
 export ENTITIES="PERSON,PLACE,ORGANIZATION"
 export RELATIONS="HAS,PART_OF,WORKED_ON,WORKED_WITH,WORKED_AT"
