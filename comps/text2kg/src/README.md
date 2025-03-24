@@ -1,13 +1,11 @@
 # Text to knowledge graph (text2kg) microservice
 
-Text to Knowledge Graph (text2kg) Microservice enables the conversion of unstructured text into structured data by generating graph triplets. This process, which can be complex, has become more accessible with the rise of Large Language Models (LLMs), making it a mainstream solution for data extraction tasks. There are two primary approaches to extracting graph triplets, depending on the architecture of the LLM— decoder-only models and encoder-decoder models.
+Text to Knowledge Graph (text2kg) Microservice enables the conversion of unstructured text into structured data by generating graph triplets. This process, which can be complex, has become more accessible with the rise of Large Language Models (LLMs), making it a mainstream solution for data extraction tasks. We are using a decoder-only model for this application's purpose.
 This microservice can be run on cpu or hpu and instructions for the same are mentioned below.
 
 ## Decoder-Only Models
 Decoder-only models are optimized for fast inference by skipping the encoding step. They work well for tasks where input-output mappings are relatively simple, or when multitasking is required. These models are ideal when computational efficiency and prompt-based output generation are priorities. However, decoder-only models may struggle with tasks that require deep contextual understanding or when input-output structures are highly complex or varied.
 
-## Encoder-Decoder Models
-Encoder-decoder models excel at handling complex relations and data sources, providing high performance by effectively encoding contextual information. This makes them ideal for tasks that require detailed parsing of text into structured formats, such as knowledge graph construction from unstructured data.
 
 ## Features
 Input Formats: Accepts text from documents, text files, or strings.
