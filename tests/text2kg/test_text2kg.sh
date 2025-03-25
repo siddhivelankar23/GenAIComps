@@ -42,9 +42,9 @@ function validate_microservice() {
     
     # Download test file
     FILE_URL="https://gist.githubusercontent.com/wey-gu/75d49362d011a0f0354d39e396404ba2/raw/0844351171751ebb1ce54ea62232bf5e59445bb7/paul_graham_essay.txt"
-    wget -P "$TEMP_DIR" "$FILE_URL"
+    wget -P "$DATA_DIRECTORY" "$FILE_URL"
     
-    if wget -P "$TEMP_DIR" "$FILE_URL"; then
+    if wget -P "$DATA_DIRECTORY" "$FILE_URL"; then
         echo "Download successful"
     else
         echo "Download failed"
