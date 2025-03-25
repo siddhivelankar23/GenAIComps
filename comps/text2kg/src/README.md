@@ -13,9 +13,7 @@ Input Formats: Accepts text from documents, text files, or strings*.
 Output: Answer to the query asked by the user.
 
 
-# 🚀 1. Start microservice with Docker (Option 1)
-
-## A. Start individual microservices using docker cli (Option A)
+# 🚀 1. Start individual microservices using docker cli (Option 1)
 
 Update the environment_setup.sh file with your device and user information, and source it using - 
 ```bash
@@ -112,8 +110,8 @@ Launch the docker container
 docker run -i -t --net=host --ipc=host -p TEXT2KG_PORT opea/text2kg:latest -v data:/home/user/comps/text2kg/src/data /bin/bash
 ```
 
+# 🚀 2. Start text2kg and dependent microservices with docker-compose (Option 2)
 
-## B. Start text2kg and dependent microservices with docker-compose (Option B)
 ```bash
 cd comps/text2kg/deployment/docker_compose/
 ```
@@ -122,7 +120,7 @@ Export service name and log path
 export service_name="text2kg"
 export LOG_PATH=$PWD
 ```
-Export NEO4J variables - refer to section 1.A.2.b.
+Export NEO4J variables - refer to section 1.2.b.
 
 Launch using the following command to run on cpu
 ```bash
@@ -132,23 +130,7 @@ Launch using  the following command to run on gaudi
 ```bash
 docker compose -f compose.yaml up ${service_name}  -d > ${LOG_PATH}/start_services_with_compose.log
 ```
-# 🚀 2. Start microservice with Python (Option 2)
 
-
-## Install Requirements
-
-```bash
- pip install -r requirements.txt
-```
-
-## Start tgi and neo4j mircoservices 
-Refer to sections 1.A.1. and 1.A.2.
-
-## Start text2kg microservice using python script 
-
-```bash
-python3 comps/text2kg/src/opea_text2kg_microservice.py
-```
 
 # 3. Check the service using API endpoint
 
