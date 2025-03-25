@@ -29,8 +29,8 @@ class GenerateKG:
     def __load_docs(self):
         
 
-        TEMP_DIR = os.environ.get["TEMP_DIR"] 
-        reader = SimpleDirectoryReader(input_dir=TEMP_DIR)
+        DATA_DIRECTORY = os.environ.get["DATA_DIRECTORY"] 
+        reader = SimpleDirectoryReader(input_dir=DATA_DIRECTORY)
         documents = reader.load_data()
         print(f'loading documents')
         
