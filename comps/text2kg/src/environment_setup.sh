@@ -31,7 +31,7 @@ export NEO4J_PORT2={$NEO4J_PORT2:-7687}:7687
 export NEO4J_AUTH=neo4j/password
 export NEO4J_PLUGINS=\[\"apoc\"\]
 
-export TEMP_DIR=$(pwd)
+export DATA_DIRECTORY=$(pwd)
 export ENTITIES="PERSON,PLACE,ORGANIZATION"
 export RELATIONS="HAS,PART_OF,WORKED_ON,WORKED_WITH,WORKED_AT"
 export VALIDATION_SCHEMA='{
@@ -39,7 +39,7 @@ export VALIDATION_SCHEMA='{
     "PLACE": ["HAS", "PART_OF", "WORKED_AT"],
     "ORGANIZATION": ["HAS", "PART_OF", "WORKED_WITH"]
 }'
-
+export TEXT2KG_PORT=8090
 ################################################################
 ### Echo env variables
 ################################################################
