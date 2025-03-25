@@ -99,6 +99,7 @@ docker run \
 
 ```bash
 cd comps/text2kg/src/
+export TEXT2KG_PORT=8090
 ```
 
 Build the text2kg docker image
@@ -108,7 +109,7 @@ docker build -f Dockerfile -t opea/text2kg:latest ../../../
 
 Launch the docker container
 ```bash
-docker run -i -t --net=host --ipc=host -p 8090 opea/text2kg:latest -v data:/home/user/comps/text2kg/src/data /bin/bash
+docker run -i -t --net=host --ipc=host -p TEXT2KG_PORT opea/text2kg:latest -v data:/home/user/comps/text2kg/src/data /bin/bash
 ```
 
 
@@ -153,9 +154,9 @@ python3 comps/text2kg/src/opea_text2kg_microservice.py
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8090/v1/text2kg?input_text=Who%20is%20paul%20graham%3F' \
+  'http://localhost:TEXT2KG_PORT/v1/text2kg?input_text=Who%20is%20paul%20graham%3F' \
   -H 'accept: application/json' \
   -d ''
 ```
 
-* Make sure your input has the necessary in
+* Make sure your input document/string has the necessary information that can be extracted.
